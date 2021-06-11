@@ -11,7 +11,7 @@ namespace WebApplication1.Models
     {
         public Customer()
         {
-            //Order = new HashSet<Order>();
+            Order = new HashSet<Order>();
         }
 
         public int CustomerId { get; set; }
@@ -19,7 +19,9 @@ namespace WebApplication1.Models
         public string Address { get; set; }
         public string Phone { get; set; }
         public string Email { get; set; }
+        public DateTime? AddedAt { get; set; }
+        public DateTime? ModifiedAt { get; set; }
 
-        //public virtual ICollection<Order> Order { get; set; }
+        public virtual ICollection<Order> Order { get; set; }
     }
 }

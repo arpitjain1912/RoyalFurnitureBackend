@@ -14,6 +14,8 @@ namespace WebApplication1.Models
         public string ItemName { get; set; }
         public int Quantity { get; set; }
         public int CostPrice { get; set; }
+        public DateTime? AddedAt { get; set; }
+        public DateTime? ModifiedAt { get; set; }
 
         public virtual CurrentStock CurrentStock { get; set; }
         public virtual Items ItemNameNavigation { get; set; }

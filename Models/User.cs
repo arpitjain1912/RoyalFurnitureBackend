@@ -7,18 +7,12 @@ using System.Collections.Generic;
 
 namespace WebApplication1.Models
 {
-    public partial class Category
+    public partial class User
     {
-        public Category()
-        {
-            Items = new HashSet<Items>();
-        }
-
-        public string CategoryId { get; set; }
-        public string CategoryName { get; set; }
+        public int UserId { get; set; }
+        public string UserName { get; set; }
+        public string AccessLevel { get; set; }
         public DateTime? AddedAt { get; set; }
         public DateTime? ModifiedAt { get; set; }
-
-        public virtual ICollection<Items> Items { get; set; }
     }
 }

@@ -24,7 +24,7 @@ namespace WebApplication1.Controllers
         [HttpGet]
         public async Task<ActionResult<IEnumerable<Items>>> GetItems()
         {
-            return await _context.Items.Include("Brand").ToListAsync();
+            return await _context.Items.Include("Brand").Include("Category").Include("ChildItem").ToListAsync();
         }
 
         // GET: api/Items/5
@@ -79,7 +79,10 @@ namespace WebApplication1.Controllers
         [HttpPost]
         public async Task<ActionResult<Items>> PostItems(Items items)
         {
+            DateTime aDate = DateTime.Now;
+            items.AddedAt = aDate;
             _context.Items.Add(items);
+
             try
             {
                 await _context.SaveChangesAsync();
@@ -95,6 +98,62 @@ namespace WebApplication1.Controllers
                     throw;
                 }
             }
+            //var parentitem;
+            if (items.IsParent==0)
+            {
+                ChildItem ch=new ChildItem();
+                ch.ItemName = items.ParentItemName;
+                ch.ChildItemName = items.ItemName;
+                ch.NumberOfCopy = items.NumberOfCopy;
+                
+                _context.ChildItem.Add(ch);
+                try
+                {
+                    await _context.SaveChangesAsync();
+                }
+                catch (DbUpdateException)
+                {
+                    if (ChildItemExists(ch.ItemName))
+                    {
+                        return Conflict();
+                    }
+                    else
+                    {
+                        throw;
+                    }
+                }
+            }
+
+            var storelist =await _context.Store.ToListAsync();
+
+            foreach(var s in storelist)
+            {
+                CurrentStock x = new CurrentStock();
+                x.ItemName = items.ItemName;
+                x.StoreId = s.StoreId;
+                x.TotalQuantityInStore = 0;
+                x.TotalQuantityLeft = 0;
+                x.AddedAt = aDate;
+                _context.CurrentStock.Add(x);
+
+                try
+                {
+                    await _context.SaveChangesAsync();
+                }
+                catch (DbUpdateException)
+                {
+                    if (CurrentStockExists(x.ItemName))
+                    {
+                        return Conflict();
+                    }
+                    else
+                    {
+                        throw;
+                    }
+                }
+            }
+
+            
 
             return CreatedAtAction("GetItems", new { id = items.ItemName }, items);
         }
@@ -118,6 +177,16 @@ namespace WebApplication1.Controllers
         private bool ItemsExists(string id)
         {
             return _context.Items.Any(e => e.ItemName == id);
+        }
+
+        private bool ChildItemExists(string id)
+        {
+            return _context.ChildItem.Any(e => e.ItemName == id);
+        }
+
+        private bool CurrentStockExists(string id)
+        {
+            return _context.CurrentStock.Any(e => e.ItemName == id);
         }
     }
 }

@@ -11,15 +11,15 @@ namespace WebApplication1.Models
     {
         public Store()
         {
-            //OrderItem = new HashSet<OrderItem>();
-            //PurchaseItem = new HashSet<PurchaseItem>();
+            OrderItem = new HashSet<OrderItem>();
+            PurchaseItem = new HashSet<PurchaseItem>();
         }
 
         public int StoreId { get; set; }
         public string Address { get; set; }
         public string Phone { get; set; }
 
-        //public virtual ICollection<OrderItem> OrderItem { get; set; }
-        //public virtual ICollection<PurchaseItem> PurchaseItem { get; set; }
+        public virtual ICollection<OrderItem> OrderItem { get; set; }
+        public virtual ICollection<PurchaseItem> PurchaseItem { get; set; }
     }
 }

@@ -13,7 +13,10 @@ namespace WebApplication1.Models
         public int OrderId { get; set; }
         public int StoreId { get; set; }
         public int Quantity { get; set; }
+        public int? CostPrice { get; set; }
         public int SellingPrice { get; set; }
+        public DateTime? AddedAt { get; set; }
+        public DateTime? ModifiedAt { get; set; }
 
         public virtual CurrentStock CurrentStock { get; set; }
         public virtual Items ItemNameNavigation { get; set; }

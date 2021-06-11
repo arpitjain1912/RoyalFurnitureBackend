@@ -11,18 +11,21 @@ namespace WebApplication1.Models
     {
         public CurrentStock()
         {
-            //OrderItem = new HashSet<OrderItem>();
-            //PurchaseItem = new HashSet<PurchaseItem>();
+            CostPrice = new HashSet<CostPrice>();
+            OrderItem = new HashSet<OrderItem>();
+            PurchaseItem = new HashSet<PurchaseItem>();
         }
-        //ItemName not made foreign key here just use simple query and join.
+
         public string ItemName { get; set; }
         public int StoreId { get; set; }
-        public int ItemId { get; set; }
-        public int QuantityInStore { get; set; }
-        public int QuantityLeft { get; set; }
-        public DateTime LastUpdate { get; set; }
+        public int CostPriceId { get; set; }//useless
+        public int TotalQuantityInStore { get; set; }
+        public int TotalQuantityLeft { get; set; }
+        public DateTime? AddedAt { get; set; }
+        public DateTime? ModifiedAt { get; set; }
 
-        //public virtual ICollection<OrderItem> OrderItem { get; set; }
-        //public virtual ICollection<PurchaseItem> PurchaseItem { get; set; }
+        public virtual ICollection<CostPrice> CostPrice { get; set; }
+        public virtual ICollection<OrderItem> OrderItem { get; set; }
+        public virtual ICollection<PurchaseItem> PurchaseItem { get; set; }
     }
 }

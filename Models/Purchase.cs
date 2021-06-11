@@ -22,6 +22,8 @@ namespace WebApplication1.Models
         public DateTime? BookingDate { get; set; }
         public DateTime? DeliveryDate { get; set; }
         public int? Status { get; set; }
+        public DateTime? AddedAt { get; set; }
+        public DateTime? ModifiedAt { get; set; }
 
         public virtual Vendor Vendor { get; set; }
         public virtual ICollection<PurchaseItem> PurchaseItem { get; set; }

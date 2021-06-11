@@ -21,16 +21,19 @@ namespace WebApplication1.Models
 
         public virtual DbSet<Brand> Brand { get; set; }
         public virtual DbSet<Category> Category { get; set; }
+        public virtual DbSet<ChildItem> ChildItem { get; set; }
+        public virtual DbSet<CostPrice> CostPrice { get; set; }
         public virtual DbSet<CurrentStock> CurrentStock { get; set; }
         public virtual DbSet<Customer> Customer { get; set; }
-        public virtual DbSet<DispatchReady> DispatchReady { get; set; }
         public virtual DbSet<Items> Items { get; set; }
         public virtual DbSet<Order> Order { get; set; }
         public virtual DbSet<OrderItem> OrderItem { get; set; }
-        //public virtual DbSet<PendingItems> PendingItems { get; set; }
         public virtual DbSet<Purchase> Purchase { get; set; }
         public virtual DbSet<PurchaseItem> PurchaseItem { get; set; }
+        public virtual DbSet<SalesTransaction> SalesTransaction { get; set; }
+        public virtual DbSet<Staff> Staff { get; set; }
         public virtual DbSet<Store> Store { get; set; }
+        public virtual DbSet<User> User { get; set; }
         public virtual DbSet<Vendor> Vendor { get; set; }
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
@@ -38,7 +41,7 @@ namespace WebApplication1.Models
             if (!optionsBuilder.IsConfigured)
             {
 #warning To protect potentially sensitive information in your connection string, you should move it out of source code. See http://go.microsoft.com/fwlink/?LinkId=723263 for guidance on storing connection strings.
-                optionsBuilder.UseSqlServer("Server=royalfurniture.database.windows.net;Database=royalfurnitureDB;User ID=royalfurniturecentre;password=Arpit_jain@1912;");
+                optionsBuilder.UseSqlServer("Server=royalfurniture.database.windows.net;Database=royalfurnitureDB;User ID=royalfurniturecentre;password=Arpit_jain@1912");
             }
         }
 
@@ -50,10 +53,14 @@ namespace WebApplication1.Models
                     .HasMaxLength(128)
                     .IsUnicode(false);
 
+                entity.Property(e => e.AddedAt).HasColumnType("datetime");
+
                 entity.Property(e => e.BrandName)
                     .IsRequired()
                     .HasMaxLength(128)
                     .IsUnicode(false);
+
+                entity.Property(e => e.ModifiedAt).HasColumnType("datetime");
             });
 
             modelBuilder.Entity<Category>(entity =>
@@ -62,27 +69,79 @@ namespace WebApplication1.Models
                     .HasMaxLength(128)
                     .IsUnicode(false);
 
+                entity.Property(e => e.AddedAt).HasColumnType("datetime");
+
                 entity.Property(e => e.CategoryName)
                     .IsRequired()
                     .HasMaxLength(128)
                     .IsUnicode(false);
+
+                entity.Property(e => e.ModifiedAt).HasColumnType("datetime");
             });
 
-            modelBuilder.Entity<CurrentStock>(entity =>
+            modelBuilder.Entity<ChildItem>(entity =>
             {
-                entity.HasKey(e => new { e.ItemName, e.StoreId })
-                    .HasName("PK__tmp_ms_x__4DFB5CE69BCB3EAA");
+                entity.HasKey(e => new { e.ItemName, e.ChildItemName })
+                    .HasName("PK__ChildIte__ED8386ECE2CF6AE9");
 
                 entity.Property(e => e.ItemName)
                     .HasMaxLength(128)
                     .IsUnicode(false);
 
-                entity.Property(e => e.LastUpdate).HasColumnType("date");
+                entity.Property(e => e.ChildItemName)
+                    .HasMaxLength(128)
+                    .IsUnicode(false);
+
+                entity.Property(e => e.NumberOfCopy).HasDefaultValueSql("((1))");
+
+                entity.HasOne(d => d.ItemNameNavigation)
+                    .WithMany(p => p.ChildItem)
+                    .HasForeignKey(d => d.ItemName)
+                    .OnDelete(DeleteBehavior.ClientSetNull)
+                    .HasConstraintName("FK__ChildItem__ItemN__3552E9B6");
+            });
+
+            modelBuilder.Entity<CostPrice>(entity =>
+            {
+                entity.HasKey(e => new { e.CostPriceId, e.ItemName, e.StoreId })
+                    .HasName("PK__CostPric__0FC0FE80BFC346E4");
+
+                entity.Property(e => e.ItemName)
+                    .HasMaxLength(128)
+                    .IsUnicode(false);
+
+                entity.Property(e => e.AddedAt).HasColumnType("datetime");
+
+                entity.Property(e => e.ModifiedAt).HasColumnType("datetime");
+
+                entity.HasOne(d => d.CurrentStock)
+                    .WithMany(p => p.CostPrice)
+                    .HasForeignKey(d => new { d.ItemName, d.StoreId })
+                    .OnDelete(DeleteBehavior.ClientSetNull)
+                    .HasConstraintName("FK__CostPrice__1209AD79");
+            });
+
+            modelBuilder.Entity<CurrentStock>(entity =>
+            {
+                entity.HasKey(e => new { e.ItemName, e.StoreId })
+                    .HasName("PK__tmp_ms_x__4DFB5CE685F1FCB3");
+
+                entity.Property(e => e.ItemName)
+                    .HasMaxLength(128)
+                    .IsUnicode(false);
+
+                entity.Property(e => e.AddedAt).HasColumnType("datetime");
+
+                entity.Property(e => e.CostPriceId).HasColumnName("CostPriceID");
+
+                entity.Property(e => e.ModifiedAt).HasColumnType("datetime");
             });
 
             modelBuilder.Entity<Customer>(entity =>
             {
                 entity.Property(e => e.CustomerId).ValueGeneratedNever();
+
+                entity.Property(e => e.AddedAt).HasColumnType("datetime");
 
                 entity.Property(e => e.Address)
                     .IsRequired()
@@ -98,35 +157,24 @@ namespace WebApplication1.Models
                     .HasMaxLength(128)
                     .IsUnicode(false);
 
+                entity.Property(e => e.ModifiedAt).HasColumnType("datetime");
+
                 entity.Property(e => e.Phone)
                     .IsRequired()
                     .HasMaxLength(128)
                     .IsUnicode(false);
             });
 
-            modelBuilder.Entity<DispatchReady>(entity =>
-            {
-                entity.HasKey(e => new { e.ItemName, e.OrderId });
-
-                entity.Property(e => e.ItemName)
-                    .HasMaxLength(128)
-                    .IsUnicode(false);
-
-                entity.Property(e => e.OrderId)
-                    .HasMaxLength(128)
-                    .IsUnicode(false);
-
-                entity.Property(e => e.DeliveryDate).HasColumnType("date");
-            });
-
             modelBuilder.Entity<Items>(entity =>
             {
                 entity.HasKey(e => e.ItemName)
-                    .HasName("PK__tmp_ms_x__4E4373F6BC1589B8");
+                    .HasName("PK__tmp_ms_x__4E4373F636B3C6F2");
 
                 entity.Property(e => e.ItemName)
                     .HasMaxLength(128)
                     .IsUnicode(false);
+
+                entity.Property(e => e.AddedAt).HasColumnType("datetime");
 
                 entity.Property(e => e.AliasCode)
                     .HasMaxLength(128)
@@ -140,13 +188,9 @@ namespace WebApplication1.Models
                     .HasMaxLength(128)
                     .IsUnicode(false);
 
-                entity.Property(e => e.Checker).HasColumnName("checker");
-
                 entity.Property(e => e.Description)
                     .HasMaxLength(128)
                     .IsUnicode(false);
-
-                entity.Property(e => e.DiscountPercent).HasDefaultValueSql("((0))");
 
                 entity.Property(e => e.Gstpercent)
                     .HasColumnName("GSTPercent")
@@ -161,96 +205,97 @@ namespace WebApplication1.Models
                     .HasMaxLength(128)
                     .IsUnicode(false);
 
-                //entity.Property(e => e.Quantity).HasDefaultValueSql("((0))");
+                entity.Property(e => e.ModifiedAt).HasColumnType("datetime");
 
-                entity.Property(e => e.WarehouseId)
+                entity.Property(e => e.ParentItemName)
                     .HasMaxLength(128)
                     .IsUnicode(false);
 
                 entity.HasOne(d => d.Brand)
-                    .WithMany(/*p => p.Items*/)
+                    .WithMany(p => p.Items)
                     .HasForeignKey(d => d.BrandId)
-                    .HasConstraintName("FK__Items__BrandId__7B264821");
+                    .HasConstraintName("FK__Items__BrandId__32767D0B");
 
                 entity.HasOne(d => d.Category)
-                    .WithMany(/*p => p.Items*/)
+                    .WithMany(p => p.Items)
                     .HasForeignKey(d => d.CategoryId)
-                    .HasConstraintName("FK__Items__CategoryI__7A3223E8");
+                    .HasConstraintName("FK__Items__CategoryI__318258D2");
             });
 
             modelBuilder.Entity<Order>(entity =>
             {
                 entity.Property(e => e.OrderId).ValueGeneratedNever();
 
+                entity.Property(e => e.AddedAt).HasColumnType("datetime");
+
                 entity.Property(e => e.BookingDate).HasColumnType("date");
 
                 entity.Property(e => e.DeliveryDate).HasColumnType("date");
 
                 entity.Property(e => e.Gstpercent).HasColumnName("GSTPercent");
+
+                entity.Property(e => e.ModifiedAt).HasColumnType("datetime");
 
                 entity.Property(e => e.Status)
                     .HasMaxLength(1)
                     .IsUnicode(false);
 
                 entity.HasOne(d => d.Customer)
-                    .WithMany(/*p => p.Order*/)
+                    .WithMany(p => p.Order)
                     .HasForeignKey(d => d.CustomerId)
                     .OnDelete(DeleteBehavior.ClientSetNull)
-                    .HasConstraintName("FK__Order__CustomerI__5E8A0973");
+                    .HasConstraintName("FK__Order__CustomerI__0F2D40CE");
+
+                entity.HasOne(d => d.Staff)
+                    .WithMany(p => p.Order)
+                    .HasForeignKey(d => d.StaffId)
+                    .OnDelete(DeleteBehavior.ClientSetNull)
+                    .HasConstraintName("FK__Order__StaffId__11158940");
             });
 
             modelBuilder.Entity<OrderItem>(entity =>
             {
                 entity.HasKey(e => new { e.ItemName, e.OrderId, e.StoreId })
-                    .HasName("PK__OrderIte__A241F4BB6387AC42");
+                    .HasName("PK__tmp_ms_x__A241F4BB222172BE");
 
                 entity.Property(e => e.ItemName)
                     .HasMaxLength(128)
                     .IsUnicode(false);
 
+                entity.Property(e => e.AddedAt).HasColumnType("datetime");
+
+                entity.Property(e => e.ModifiedAt).HasColumnType("datetime");
+
                 entity.HasOne(d => d.ItemNameNavigation)
-                    .WithMany(/*p => p.OrderItem*/)
+                    .WithMany(p => p.OrderItem)
                     .HasForeignKey(d => d.ItemName)
                     .OnDelete(DeleteBehavior.ClientSetNull)
-                    .HasConstraintName("FK__OrderItem__ItemN__7C1A6C5A");
+                    .HasConstraintName("FK__OrderItem__ItemN__3A179ED3");
 
                 entity.HasOne(d => d.Order)
                     .WithMany(p => p.OrderItem)
                     .HasForeignKey(d => d.OrderId)
                     .OnDelete(DeleteBehavior.ClientSetNull)
-                    .HasConstraintName("FK__OrderItem__Order__690797E6");
+                    .HasConstraintName("FK__OrderItem__Order__39237A9A");
 
                 entity.HasOne(d => d.Store)
-                    .WithMany(/*p => p.OrderItem*/)
+                    .WithMany(p => p.OrderItem)
                     .HasForeignKey(d => d.StoreId)
                     .OnDelete(DeleteBehavior.ClientSetNull)
-                    .HasConstraintName("FK__OrderItem__Store__69FBBC1F");
+                    .HasConstraintName("FK__OrderItem__Store__3B0BC30C");
 
                 entity.HasOne(d => d.CurrentStock)
-                    .WithMany(/*p => p.OrderItem*/)
+                    .WithMany(p => p.OrderItem)
                     .HasForeignKey(d => new { d.ItemName, d.StoreId })
                     .OnDelete(DeleteBehavior.ClientSetNull)
-                    .HasConstraintName("FK__OrderItem__6FB49575");
+                    .HasConstraintName("FK__OrderItem__382F5661");
             });
-
-            /*modelBuilder.Entity<PendingItems>(entity =>
-            {
-                entity.HasKey(e => new { e.ItemName, e.OrderId });
-
-                entity.Property(e => e.ItemName)
-                    .HasMaxLength(128)
-                    .IsUnicode(false);
-
-                entity.Property(e => e.OrderId)
-                    .HasMaxLength(128)
-                    .IsUnicode(false);
-
-                entity.Property(e => e.DeliveryDate).HasColumnType("date");
-            });*/
 
             modelBuilder.Entity<Purchase>(entity =>
             {
                 entity.Property(e => e.PurchaseId).ValueGeneratedNever();
+
+                entity.Property(e => e.AddedAt).HasColumnType("datetime");
 
                 entity.Property(e => e.BookingDate).HasColumnType("date");
 
@@ -258,8 +303,10 @@ namespace WebApplication1.Models
 
                 entity.Property(e => e.Gstpercent).HasColumnName("GSTPercent");
 
+                entity.Property(e => e.ModifiedAt).HasColumnType("datetime");
+
                 entity.HasOne(d => d.Vendor)
-                    .WithMany(/*p => p.Purchase*/)
+                    .WithMany(p => p.Purchase)
                     .HasForeignKey(d => d.VendorId)
                     .OnDelete(DeleteBehavior.ClientSetNull)
                     .HasConstraintName("FK__Purchase__Vendor__6EC0713C");
@@ -274,11 +321,15 @@ namespace WebApplication1.Models
                     .HasMaxLength(128)
                     .IsUnicode(false);
 
+                entity.Property(e => e.AddedAt).HasColumnType("datetime");
+
+                entity.Property(e => e.ModifiedAt).HasColumnType("datetime");
+
                 entity.HasOne(d => d.ItemNameNavigation)
-                    .WithMany(/*p => p.PurchaseItem*/)
+                    .WithMany(p => p.PurchaseItem)
                     .HasForeignKey(d => d.ItemName)
                     .OnDelete(DeleteBehavior.ClientSetNull)
-                    .HasConstraintName("FK__PurchaseI__ItemN__793DFFAF");
+                    .HasConstraintName("FK__PurchaseI__ItemN__345EC57D");
 
                 entity.HasOne(d => d.Purchase)
                     .WithMany(p => p.PurchaseItem)
@@ -287,16 +338,58 @@ namespace WebApplication1.Models
                     .HasConstraintName("FK__PurchaseI__Purch__719CDDE7");
 
                 entity.HasOne(d => d.Store)
-                    .WithMany(/*p => p.PurchaseItem*/)
+                    .WithMany(p => p.PurchaseItem)
                     .HasForeignKey(d => d.StoreId)
                     .OnDelete(DeleteBehavior.ClientSetNull)
                     .HasConstraintName("FK__PurchaseI__Store__72910220");
 
                 entity.HasOne(d => d.CurrentStock)
-                    .WithMany(/*p => p.PurchaseItem*/)
+                    .WithMany(p => p.PurchaseItem)
                     .HasForeignKey(d => new { d.ItemName, d.StoreId })
                     .OnDelete(DeleteBehavior.ClientSetNull)
-                    .HasConstraintName("FK__PurchaseItem__73852659");
+                    .HasConstraintName("FK__PurchaseItem__0E391C95");
+            });
+
+            modelBuilder.Entity<SalesTransaction>(entity =>
+            {
+                entity.HasKey(e => new { e.TransactionId, e.OrderId })
+                    .HasName("PK__SalesTra__B97A3FD7691C0A96");
+
+                entity.Property(e => e.AddedAt).HasColumnType("datetime");
+
+                entity.Property(e => e.ModifiedAt).HasColumnType("datetime");
+
+                entity.HasOne(d => d.Order)
+                    .WithMany(p => p.SalesTransaction)
+                    .HasForeignKey(d => d.OrderId)
+                    .OnDelete(DeleteBehavior.ClientSetNull)
+                    .HasConstraintName("FK__SalesTran__Order__12FDD1B2");
+            });
+
+            modelBuilder.Entity<Staff>(entity =>
+            {
+                entity.Property(e => e.StaffId).ValueGeneratedNever();
+
+                entity.Property(e => e.AddedAt).HasColumnType("datetime");
+
+                entity.Property(e => e.Address)
+                    .HasMaxLength(128)
+                    .IsUnicode(false);
+
+                entity.Property(e => e.ModifiedAt).HasColumnType("datetime");
+
+                entity.Property(e => e.OptionalData)
+                    .HasMaxLength(128)
+                    .IsUnicode(false);
+
+                entity.Property(e => e.Phone)
+                    .HasMaxLength(128)
+                    .IsUnicode(false);
+
+                entity.Property(e => e.StaffName)
+                    .IsRequired()
+                    .HasMaxLength(128)
+                    .IsUnicode(false);
             });
 
             modelBuilder.Entity<Store>(entity =>
@@ -315,9 +408,29 @@ namespace WebApplication1.Models
                     .IsUnicode(false);
             });
 
+            modelBuilder.Entity<User>(entity =>
+            {
+                entity.Property(e => e.UserId).ValueGeneratedNever();
+
+                entity.Property(e => e.AccessLevel)
+                    .HasMaxLength(128)
+                    .IsUnicode(false);
+
+                entity.Property(e => e.AddedAt).HasColumnType("datetime");
+
+                entity.Property(e => e.ModifiedAt).HasColumnType("datetime");
+
+                entity.Property(e => e.UserName)
+                    .IsRequired()
+                    .HasMaxLength(128)
+                    .IsUnicode(false);
+            });
+
             modelBuilder.Entity<Vendor>(entity =>
             {
                 entity.Property(e => e.VendorId).ValueGeneratedNever();
+
+                entity.Property(e => e.AddedAt).HasColumnType("datetime");
 
                 entity.Property(e => e.Address)
                     .HasMaxLength(128)
@@ -332,6 +445,8 @@ namespace WebApplication1.Models
                     .HasColumnName("GSTNumber")
                     .HasMaxLength(128)
                     .IsUnicode(false);
+
+                entity.Property(e => e.ModifiedAt).HasColumnType("datetime");
 
                 entity.Property(e => e.Phone)
                     .IsRequired()

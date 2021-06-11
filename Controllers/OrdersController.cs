@@ -54,6 +54,8 @@ namespace WebApplication1.Controllers
 
             _context.Entry(order).State = EntityState.Modified;
 
+            //
+
             try
             {
                 await _context.SaveChangesAsync();
@@ -79,11 +81,19 @@ namespace WebApplication1.Controllers
         [HttpPost]
         public async Task<ActionResult<Order>> PostOrder(Order order)
         {
+            DateTime aDate = DateTime.Now;
             int id = 0;
             id = await _context.Order.MaxAsync(x => (int?)x.OrderId) ?? 0;
             id++;
 
+            order.AddedAt = aDate;
             order.OrderId = id;
+
+            foreach (var o in order.OrderItem)
+            {
+                o.AddedAt = aDate;
+            }
+
             _context.Order.Add(order);
             
             try
@@ -101,11 +111,13 @@ namespace WebApplication1.Controllers
                     throw;
                 }
             }
-            var or = await _context.Order.Include("OrderItem.CurrentStock").SingleOrDefaultAsync(i => i.OrderId == id);
 
-            foreach (OrderItem oi in or.OrderItem)
+            var orderitems = order.OrderItem;
+
+            foreach(var oi in orderitems)
             {
-                oi.CurrentStock.QuantityLeft -= oi.Quantity;
+                var curr_stock = await _context.CurrentStock.FindAsync(oi.ItemName, oi.StoreId);
+                curr_stock.TotalQuantityLeft -= oi.Quantity;
             }
 
             try

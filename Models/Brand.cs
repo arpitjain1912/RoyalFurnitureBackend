@@ -11,12 +11,14 @@ namespace WebApplication1.Models
     {
         public Brand()
         {
-            //Items = new HashSet<Items>();
+            Items = new HashSet<Items>();
         }
 
         public string BrandId { get; set; }
         public string BrandName { get; set; }
+        public DateTime? AddedAt { get; set; }
+        public DateTime? ModifiedAt { get; set; }
 
-        //public virtual ICollection<Items> Items { get; set; }
+        public virtual ICollection<Items> Items { get; set; }
     }
 }

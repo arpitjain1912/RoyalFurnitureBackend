@@ -79,7 +79,20 @@ namespace WebApplication1.Controllers
         [HttpPost]
         public async Task<ActionResult<Purchase>> PostPurchase(Purchase purchase)
         {
+            DateTime aDate = DateTime.Now;
+            int id = 0;
+            id = await _context.Purchase.MaxAsync(x => (int?)x.PurchaseId) ?? 0;
+            id++;
+            purchase.PurchaseId = id;
+            purchase.AddedAt = aDate;
+
+            foreach(var p in purchase.PurchaseItem)
+            {
+                p.AddedAt = aDate;
+            }
+
             _context.Purchase.Add(purchase);
+
             try
             {
                 await _context.SaveChangesAsync();
@@ -94,6 +107,49 @@ namespace WebApplication1.Controllers
                 {
                     throw;
                 }
+            }
+
+            //Add purchase items into CurrentStock
+            var purchaseitems = purchase.PurchaseItem;
+
+            foreach(var p in purchaseitems)
+            {
+                var c1 = await _context.CostPrice.FindAsync(p.CostPrice, p.ItemName, p.StoreId);
+                var curr_stock = await _context.CurrentStock.FindAsync(p.ItemName, p.StoreId);
+
+                if (c1 != null)
+                {
+                    c1.Quantityinstore += p.Quantity;
+                }
+                else
+                {
+                    var c = new CostPrice();
+                    c.CostPriceId = p.CostPrice;
+                    c.ItemName = p.ItemName;
+                    c.StoreId = p.StoreId;
+                    c.Quantityinstore = p.Quantity;
+                    c.AddedAt = aDate;
+                    _context.CostPrice.Add(c);
+                }
+                curr_stock.TotalQuantityInStore += p.Quantity;
+                curr_stock.TotalQuantityLeft += p.Quantity;
+
+                try
+                {
+                    await _context.SaveChangesAsync();
+                }
+                catch (DbUpdateException)
+                {
+                    if (PurchaseExists(purchase.PurchaseId))
+                    {
+                        return Conflict();
+                    }
+                    else
+                    {
+                        throw;
+                    }
+                }
+
             }
 
             return CreatedAtAction("GetPurchase", new { id = purchase.PurchaseId }, purchase);

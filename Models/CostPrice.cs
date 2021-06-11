@@ -7,18 +7,15 @@ using System.Collections.Generic;
 
 namespace WebApplication1.Models
 {
-    public partial class Category
+    public partial class CostPrice
     {
-        public Category()
-        {
-            Items = new HashSet<Items>();
-        }
-
-        public string CategoryId { get; set; }
-        public string CategoryName { get; set; }
+        public int CostPriceId { get; set; }
+        public string ItemName { get; set; }
+        public int StoreId { get; set; }
+        public int Quantityinstore { get; set; }
         public DateTime? AddedAt { get; set; }
         public DateTime? ModifiedAt { get; set; }
 
-        public virtual ICollection<Items> Items { get; set; }
+        public virtual CurrentStock CurrentStock { get; set; }
     }
 }

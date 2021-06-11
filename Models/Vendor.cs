@@ -11,7 +11,7 @@ namespace WebApplication1.Models
     {
         public Vendor()
         {
-            //Purchase = new HashSet<Purchase>();
+            Purchase = new HashSet<Purchase>();
         }
 
         public int VendorId { get; set; }
@@ -20,7 +20,9 @@ namespace WebApplication1.Models
         public string Phone { get; set; }
         public string Email { get; set; }
         public string Gstnumber { get; set; }
+        public DateTime? AddedAt { get; set; }
+        public DateTime? ModifiedAt { get; set; }
 
-        //public virtual ICollection<Purchase> Purchase { get; set; }
+        public virtual ICollection<Purchase> Purchase { get; set; }
     }
 }

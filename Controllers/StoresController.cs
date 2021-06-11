@@ -79,6 +79,7 @@ namespace WebApplication1.Controllers
         [HttpPost]
         public async Task<ActionResult<Store>> PostStore(Store store)
         {
+            DateTime aDate = DateTime.Now;
             _context.Store.Add(store);
             try
             {
@@ -93,6 +94,35 @@ namespace WebApplication1.Controllers
                 else
                 {
                     throw;
+                }
+            }
+
+            var itemlist =await _context.Items.ToListAsync();
+
+            foreach(var i in itemlist)
+            {
+                CurrentStock x = new CurrentStock();
+                x.ItemName = i.ItemName;
+                x.StoreId = store.StoreId;
+                x.TotalQuantityInStore = 0;
+                x.TotalQuantityLeft = 0;
+                x.AddedAt = aDate;
+                _context.CurrentStock.Add(x);
+
+                try
+                {
+                    await _context.SaveChangesAsync();
+                }
+                catch (DbUpdateException)
+                {
+                    if (CurrentStockExists(x.ItemName))
+                    {
+                        return Conflict();
+                    }
+                    else
+                    {
+                        throw;
+                    }
                 }
             }
 
@@ -118,6 +148,11 @@ namespace WebApplication1.Controllers
         private bool StoreExists(int id)
         {
             return _context.Store.Any(e => e.StoreId == id);
+        }
+
+        private bool CurrentStockExists(string id)
+        {
+            return _context.CurrentStock.Any(e => e.ItemName == id);
         }
     }
 }

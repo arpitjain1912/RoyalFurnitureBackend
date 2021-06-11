@@ -11,48 +11,48 @@ namespace WebApplication1.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class PurchaseItemsController : ControllerBase
+    public class ChildItemsController : ControllerBase
     {
         private readonly royalfurnitureDBContext _context;
 
-        public PurchaseItemsController(royalfurnitureDBContext context)
+        public ChildItemsController(royalfurnitureDBContext context)
         {
             _context = context;
         }
 
-        // GET: api/PurchaseItems
+        // GET: api/ChildItems
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<PurchaseItem>>> GetPurchaseItem()
+        public async Task<ActionResult<IEnumerable<ChildItem>>> GetChildItem()
         {
-            return await _context.PurchaseItem.ToListAsync();
+            return await _context.ChildItem.ToListAsync();
         }
 
-        // GET: api/PurchaseItems/5
+        // GET: api/ChildItems/5
         [HttpGet("{id}")]
-        public async Task<ActionResult<PurchaseItem>> GetPurchaseItem(int id)
+        public async Task<ActionResult<ChildItem>> GetChildItem(string id)
         {
-            var purchaseItem = await _context.PurchaseItem.FindAsync(id);
+            var childItem = await _context.ChildItem.FindAsync(id);
 
-            if (purchaseItem == null)
+            if (childItem == null)
             {
                 return NotFound();
             }
 
-            return purchaseItem;
+            return childItem;
         }
 
-        // PUT: api/PurchaseItems/5
+        // PUT: api/ChildItems/5
         // To protect from overposting attacks, enable the specific properties you want to bind to, for
         // more details, see https://go.microsoft.com/fwlink/?linkid=2123754.
         [HttpPut("{id}")]
-        public async Task<IActionResult> PutPurchaseItem(int id, PurchaseItem purchaseItem)
+        public async Task<IActionResult> PutChildItem(string id, ChildItem childItem)
         {
-            if (id != purchaseItem.PurchaseId)
+            if (id != childItem.ItemName)
             {
                 return BadRequest();
             }
 
-            _context.Entry(purchaseItem).State = EntityState.Modified;
+            _context.Entry(childItem).State = EntityState.Modified;
 
             try
             {
@@ -60,7 +60,7 @@ namespace WebApplication1.Controllers
             }
             catch (DbUpdateConcurrencyException)
             {
-                if (!PurchaseItemExists(id))
+                if (!ChildItemExists(id))
                 {
                     return NotFound();
                 }
@@ -73,20 +73,20 @@ namespace WebApplication1.Controllers
             return NoContent();
         }
 
-        // POST: api/PurchaseItems
+        // POST: api/ChildItems
         // To protect from overposting attacks, enable the specific properties you want to bind to, for
         // more details, see https://go.microsoft.com/fwlink/?linkid=2123754.
         [HttpPost]
-        public async Task<ActionResult<PurchaseItem>> PostPurchaseItem(PurchaseItem purchaseItem)
+        public async Task<ActionResult<ChildItem>> PostChildItem(ChildItem childItem)
         {
-            _context.PurchaseItem.Add(purchaseItem);
+            _context.ChildItem.Add(childItem);
             try
             {
                 await _context.SaveChangesAsync();
             }
             catch (DbUpdateException)
             {
-                if (PurchaseItemExists(purchaseItem.PurchaseId))
+                if (ChildItemExists(childItem.ItemName))
                 {
                     return Conflict();
                 }
@@ -96,30 +96,28 @@ namespace WebApplication1.Controllers
                 }
             }
 
-
-
-            return CreatedAtAction("GetPurchaseItem", new { id = purchaseItem.PurchaseId }, purchaseItem);
+            return CreatedAtAction("GetChildItem", new { id = childItem.ItemName }, childItem);
         }
 
-        // DELETE: api/PurchaseItems/5
+        // DELETE: api/ChildItems/5
         [HttpDelete("{id}")]
-        public async Task<ActionResult<PurchaseItem>> DeletePurchaseItem(int id)
+        public async Task<ActionResult<ChildItem>> DeleteChildItem(string id)
         {
-            var purchaseItem = await _context.PurchaseItem.FindAsync(id);
-            if (purchaseItem == null)
+            var childItem = await _context.ChildItem.FindAsync(id);
+            if (childItem == null)
             {
                 return NotFound();
             }
 
-            _context.PurchaseItem.Remove(purchaseItem);
+            _context.ChildItem.Remove(childItem);
             await _context.SaveChangesAsync();
 
-            return purchaseItem;
+            return childItem;
         }
 
-        private bool PurchaseItemExists(int id)
+        private bool ChildItemExists(string id)
         {
-            return _context.PurchaseItem.Any(e => e.PurchaseId == id);
+            return _context.ChildItem.Any(e => e.ItemName == id);
         }
     }
 }
