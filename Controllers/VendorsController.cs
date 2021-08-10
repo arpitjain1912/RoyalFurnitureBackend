@@ -6,6 +6,8 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using WebApplication1.Models;
+using WebApplication1.Filters;
+using WebApplication1.Wrappers;
 
 namespace WebApplication1.Controllers
 {
@@ -24,7 +26,8 @@ namespace WebApplication1.Controllers
         [HttpGet]
         public async Task<ActionResult<IEnumerable<Vendor>>> GetVendor()
         {
-            return await _context.Vendor.ToListAsync();
+            var response = await _context.Vendor.ToListAsync();
+            return Ok(new Response<List<Vendor>>(response));
         }
 
         // GET: api/Vendors/5
@@ -38,7 +41,7 @@ namespace WebApplication1.Controllers
                 return NotFound();
             }
 
-            return vendor;
+            return Ok(new Response<Vendor>(vendor));
         }
 
         // PUT: api/Vendors/5
@@ -79,6 +82,15 @@ namespace WebApplication1.Controllers
         [HttpPost]
         public async Task<ActionResult<Vendor>> PostVendor(Vendor vendor)
         {
+            DateTime aDate = DateTime.Now;
+            vendor.AddedAt = aDate;
+
+            int id = 0;
+            id = await _context.Vendor.MaxAsync(x => (int?)x.VendorId) ?? 0;
+            id++;
+
+            vendor.VendorId = id;
+
             _context.Vendor.Add(vendor);
             try
             {

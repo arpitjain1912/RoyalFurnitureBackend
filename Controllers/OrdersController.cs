@@ -6,6 +6,8 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using WebApplication1.Models;
+using WebApplication1.Filters;
+using WebApplication1.Wrappers;
 
 namespace WebApplication1.Controllers
 {
@@ -22,9 +24,12 @@ namespace WebApplication1.Controllers
 
         // GET: api/Orders
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<Order>>> GetOrder()
+        public async Task<ActionResult<IEnumerable<Order>>> GetOrder([FromQuery] PaginationFilter page)
         {
-            return await _context.Order.ToListAsync();
+            PaginationFilter p = new PaginationFilter(page.PageNumber, page.PageSize);
+            var pagedresponse = await _context.Order.Skip((p.PageNumber - 1) * p.PageSize).Take(p.PageSize).Include("Staff").Include("Customer").Include("OrderItem").Include("SalesTransaction").ToListAsync();
+            var totalcount = await _context.Order.CountAsync();
+            return Ok(new PagedResponse<List<Order>>(pagedresponse, totalcount, p.PageNumber, p.PageSize));
         }
 
         // GET: api/Orders/5
@@ -38,7 +43,7 @@ namespace WebApplication1.Controllers
                 return NotFound();
             }
 
-            return order;
+            return Ok(new Response<Order>(order));
         }
 
         // PUT: api/Orders/5

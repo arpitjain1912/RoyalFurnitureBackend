@@ -15,12 +15,11 @@ namespace WebApplication1.Models
         }
 
         public int PurchaseId { get; set; }
+        public string PurchaseInvoice { get; set; }
+        public int IsGst { get; set; }
         public int VendorId { get; set; }
         public float? Amount { get; set; }
-        public float? Gstpercent { get; set; }
-        public float? DiscountPercent { get; set; }
-        public DateTime? BookingDate { get; set; }
-        public DateTime? DeliveryDate { get; set; }
+        public DateTime? PurchaseDate { get; set; }
         public int? Status { get; set; }
         public DateTime? AddedAt { get; set; }
         public DateTime? ModifiedAt { get; set; }

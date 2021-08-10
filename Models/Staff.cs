@@ -11,7 +11,7 @@ namespace WebApplication1.Models
     {
         public Staff()
         {
-            Order = new HashSet<Order>();
+            //Order = new HashSet<Order>();
         }
 
         public int StaffId { get; set; }
@@ -22,6 +22,6 @@ namespace WebApplication1.Models
         public DateTime? AddedAt { get; set; }
         public DateTime? ModifiedAt { get; set; }
 
-        public virtual ICollection<Order> Order { get; set; }
+        //public virtual ICollection<Order> Order { get; set; }
     }
 }

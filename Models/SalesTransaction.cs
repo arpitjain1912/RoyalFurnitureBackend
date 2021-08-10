@@ -11,6 +11,7 @@ namespace WebApplication1.Models
     {
         public int TransactionId { get; set; }
         public int OrderId { get; set; }
+        public int ModeOfPayment { get; set; }
         public int AmountPaid { get; set; }
         public DateTime? AddedAt { get; set; }
         public DateTime? ModifiedAt { get; set; }

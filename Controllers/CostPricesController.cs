@@ -6,6 +6,8 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using WebApplication1.Models;
+using WebApplication1.Filters;
+using WebApplication1.Wrappers;
 
 namespace WebApplication1.Controllers
 {
@@ -24,7 +26,8 @@ namespace WebApplication1.Controllers
         [HttpGet]
         public async Task<ActionResult<IEnumerable<CostPrice>>> GetCostPrice()
         {
-            return await _context.CostPrice.ToListAsync();
+            var response = await _context.CostPrice.ToListAsync();
+            return Ok(new Response<List<CostPrice>>(response));
         }
 
         // GET: api/CostPrices/5
@@ -38,7 +41,7 @@ namespace WebApplication1.Controllers
                 return NotFound();
             }
 
-            return costPrice;
+            return Ok(new Response<CostPrice>(costPrice));
         }
 
         // PUT: api/CostPrices/5
@@ -79,6 +82,14 @@ namespace WebApplication1.Controllers
         [HttpPost]
         public async Task<ActionResult<CostPrice>> PostCostPrice(CostPrice costPrice)
         {
+            DateTime aDate = DateTime.Now;
+            costPrice.AddedAt = aDate;
+
+            /*int id = 0;
+            id = await _context.CostPrice.Where(c=> c.ItemName==costPrice.ItemName && c.StoreId==costPrice.StoreId).MaxAsync(x=>(int?)x.CostPriceId)?? 0;
+            id++;*/
+
+            //costPrice.CostPriceId = id;
             _context.CostPrice.Add(costPrice);
             try
             {

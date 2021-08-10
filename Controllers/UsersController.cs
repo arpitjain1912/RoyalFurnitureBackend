@@ -6,6 +6,8 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using WebApplication1.Models;
+using WebApplication1.Filters;
+using WebApplication1.Wrappers;
 
 namespace WebApplication1.Controllers
 {
@@ -24,7 +26,8 @@ namespace WebApplication1.Controllers
         [HttpGet]
         public async Task<ActionResult<IEnumerable<User>>> GetUser()
         {
-            return await _context.User.ToListAsync();
+            var response = await _context.User.ToListAsync();
+            return Ok(new Response<List<User>>(response));
         }
 
         // GET: api/Users/5
@@ -38,7 +41,7 @@ namespace WebApplication1.Controllers
                 return NotFound();
             }
 
-            return user;
+            return Ok(new Response<User>(user));
         }
 
         // PUT: api/Users/5
@@ -79,6 +82,15 @@ namespace WebApplication1.Controllers
         [HttpPost]
         public async Task<ActionResult<User>> PostUser(User user)
         {
+            DateTime aDate = DateTime.Now;
+            user.AddedAt = aDate;
+
+            int id = 0;
+            id = await _context.User.MaxAsync(x => (int?)x.UserId) ?? 0;
+            id++;
+
+            user.UserId = id;
+
             _context.User.Add(user);
             try
             {

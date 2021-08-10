@@ -92,6 +92,10 @@ namespace WebApplication1.Models
                     .HasMaxLength(128)
                     .IsUnicode(false);
 
+                entity.Property(e => e.AddedAt).HasColumnType("datetime");
+
+                entity.Property(e => e.ModifiedAt).HasColumnType("datetime");
+
                 entity.Property(e => e.NumberOfCopy).HasDefaultValueSql("((1))");
 
                 entity.HasOne(d => d.ItemNameNavigation)
@@ -157,6 +161,11 @@ namespace WebApplication1.Models
                     .HasMaxLength(128)
                     .IsUnicode(false);
 
+                entity.Property(e => e.Gstno)
+                    .HasColumnName("GSTNo")
+                    .HasMaxLength(128)
+                    .IsUnicode(false);
+
                 entity.Property(e => e.ModifiedAt).HasColumnType("datetime");
 
                 entity.Property(e => e.Phone)
@@ -212,12 +221,12 @@ namespace WebApplication1.Models
                     .IsUnicode(false);
 
                 entity.HasOne(d => d.Brand)
-                    .WithMany(p => p.Items)
+                    .WithMany(/*p => p.Items*/)
                     .HasForeignKey(d => d.BrandId)
                     .HasConstraintName("FK__Items__BrandId__32767D0B");
 
                 entity.HasOne(d => d.Category)
-                    .WithMany(p => p.Items)
+                    .WithMany(/*p => p.Items*/)
                     .HasForeignKey(d => d.CategoryId)
                     .HasConstraintName("FK__Items__CategoryI__318258D2");
             });
@@ -234,23 +243,29 @@ namespace WebApplication1.Models
 
                 entity.Property(e => e.Gstpercent).HasColumnName("GSTPercent");
 
+                entity.Property(e => e.IsGst).HasColumnName("IsGST");
+
                 entity.Property(e => e.ModifiedAt).HasColumnType("datetime");
+
+                entity.Property(e => e.OrderInvoice)
+                    .HasMaxLength(128)
+                    .IsUnicode(false);
 
                 entity.Property(e => e.Status)
                     .HasMaxLength(1)
                     .IsUnicode(false);
 
                 entity.HasOne(d => d.Customer)
-                    .WithMany(p => p.Order)
+                    .WithMany(/*p => p.Order*/)
                     .HasForeignKey(d => d.CustomerId)
                     .OnDelete(DeleteBehavior.ClientSetNull)
-                    .HasConstraintName("FK__Order__CustomerI__0F2D40CE");
+                    .HasConstraintName("FK__Order__CustomerI__67DE6983");
 
                 entity.HasOne(d => d.Staff)
-                    .WithMany(p => p.Order)
+                    .WithMany(/*p => p.Order*/)
                     .HasForeignKey(d => d.StaffId)
                     .OnDelete(DeleteBehavior.ClientSetNull)
-                    .HasConstraintName("FK__Order__StaffId__11158940");
+                    .HasConstraintName("FK__Order__StaffId__66EA454A");
             });
 
             modelBuilder.Entity<OrderItem>(entity =>
@@ -267,7 +282,7 @@ namespace WebApplication1.Models
                 entity.Property(e => e.ModifiedAt).HasColumnType("datetime");
 
                 entity.HasOne(d => d.ItemNameNavigation)
-                    .WithMany(p => p.OrderItem)
+                    .WithMany(/*p => p.OrderItem*/)
                     .HasForeignKey(d => d.ItemName)
                     .OnDelete(DeleteBehavior.ClientSetNull)
                     .HasConstraintName("FK__OrderItem__ItemN__3A179ED3");
@@ -276,16 +291,16 @@ namespace WebApplication1.Models
                     .WithMany(p => p.OrderItem)
                     .HasForeignKey(d => d.OrderId)
                     .OnDelete(DeleteBehavior.ClientSetNull)
-                    .HasConstraintName("FK__OrderItem__Order__39237A9A");
+                    .HasConstraintName("FK__OrderItem__Order__65F62111");
 
                 entity.HasOne(d => d.Store)
-                    .WithMany(p => p.OrderItem)
+                    .WithMany(/*p => p.OrderItem*/)
                     .HasForeignKey(d => d.StoreId)
                     .OnDelete(DeleteBehavior.ClientSetNull)
-                    .HasConstraintName("FK__OrderItem__Store__3B0BC30C");
+                    .HasConstraintName("FK__OrderItem__Store__019E3B86");
 
                 entity.HasOne(d => d.CurrentStock)
-                    .WithMany(p => p.OrderItem)
+                    .WithMany(/*p => p.OrderItem*/)
                     .HasForeignKey(d => new { d.ItemName, d.StoreId })
                     .OnDelete(DeleteBehavior.ClientSetNull)
                     .HasConstraintName("FK__OrderItem__382F5661");
@@ -297,19 +312,21 @@ namespace WebApplication1.Models
 
                 entity.Property(e => e.AddedAt).HasColumnType("datetime");
 
-                entity.Property(e => e.BookingDate).HasColumnType("date");
-
-                entity.Property(e => e.DeliveryDate).HasColumnType("date");
-
-                entity.Property(e => e.Gstpercent).HasColumnName("GSTPercent");
+                entity.Property(e => e.IsGst).HasColumnName("IsGST");
 
                 entity.Property(e => e.ModifiedAt).HasColumnType("datetime");
 
+                entity.Property(e => e.PurchaseDate).HasColumnType("date");
+
+                entity.Property(e => e.PurchaseInvoice)
+                    .HasMaxLength(128)
+                    .IsUnicode(false);
+
                 entity.HasOne(d => d.Vendor)
-                    .WithMany(p => p.Purchase)
+                    .WithMany(/*p => p.Purchase*/)
                     .HasForeignKey(d => d.VendorId)
                     .OnDelete(DeleteBehavior.ClientSetNull)
-                    .HasConstraintName("FK__Purchase__Vendor__6EC0713C");
+                    .HasConstraintName("FK__Purchase__Vendor__50FB042B");
             });
 
             modelBuilder.Entity<PurchaseItem>(entity =>
@@ -326,7 +343,7 @@ namespace WebApplication1.Models
                 entity.Property(e => e.ModifiedAt).HasColumnType("datetime");
 
                 entity.HasOne(d => d.ItemNameNavigation)
-                    .WithMany(p => p.PurchaseItem)
+                    .WithMany(/*p => p.PurchaseItem*/)
                     .HasForeignKey(d => d.ItemName)
                     .OnDelete(DeleteBehavior.ClientSetNull)
                     .HasConstraintName("FK__PurchaseI__ItemN__345EC57D");
@@ -335,16 +352,16 @@ namespace WebApplication1.Models
                     .WithMany(p => p.PurchaseItem)
                     .HasForeignKey(d => d.PurchaseId)
                     .OnDelete(DeleteBehavior.ClientSetNull)
-                    .HasConstraintName("FK__PurchaseI__Purch__719CDDE7");
+                    .HasConstraintName("FK__PurchaseI__Purch__5006DFF2");
 
                 entity.HasOne(d => d.Store)
-                    .WithMany(p => p.PurchaseItem)
+                    .WithMany(/*p => p.PurchaseItem*/)
                     .HasForeignKey(d => d.StoreId)
                     .OnDelete(DeleteBehavior.ClientSetNull)
-                    .HasConstraintName("FK__PurchaseI__Store__72910220");
+                    .HasConstraintName("FK__PurchaseI__Store__02925FBF");
 
                 entity.HasOne(d => d.CurrentStock)
-                    .WithMany(p => p.PurchaseItem)
+                    .WithMany(/*p => p.PurchaseItem*/)
                     .HasForeignKey(d => new { d.ItemName, d.StoreId })
                     .OnDelete(DeleteBehavior.ClientSetNull)
                     .HasConstraintName("FK__PurchaseItem__0E391C95");
@@ -353,7 +370,7 @@ namespace WebApplication1.Models
             modelBuilder.Entity<SalesTransaction>(entity =>
             {
                 entity.HasKey(e => new { e.TransactionId, e.OrderId })
-                    .HasName("PK__SalesTra__B97A3FD7691C0A96");
+                    .HasName("PK__tmp_ms_x__B97A3FD78DB42AAF");
 
                 entity.Property(e => e.AddedAt).HasColumnType("datetime");
 
@@ -363,7 +380,7 @@ namespace WebApplication1.Models
                     .WithMany(p => p.SalesTransaction)
                     .HasForeignKey(d => d.OrderId)
                     .OnDelete(DeleteBehavior.ClientSetNull)
-                    .HasConstraintName("FK__SalesTran__Order__12FDD1B2");
+                    .HasConstraintName("FK__SalesTran__Order__68D28DBC");
             });
 
             modelBuilder.Entity<Staff>(entity =>
@@ -398,14 +415,24 @@ namespace WebApplication1.Models
                     .HasColumnName("Store_Id")
                     .ValueGeneratedNever();
 
+                entity.Property(e => e.AddedAt).HasColumnType("datetime");
+
                 entity.Property(e => e.Address)
                     .IsRequired()
                     .HasMaxLength(128)
                     .IsUnicode(false);
 
+                entity.Property(e => e.ModifiedAt).HasColumnType("datetime");
+
                 entity.Property(e => e.Phone)
                     .HasMaxLength(128)
                     .IsUnicode(false);
+
+                entity.Property(e => e.StoreName)
+                    .IsRequired()
+                    .HasMaxLength(128)
+                    .IsUnicode(false)
+                    .HasDefaultValueSql("('Temp_Store')");
             });
 
             modelBuilder.Entity<User>(entity =>

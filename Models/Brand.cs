@@ -11,7 +11,7 @@ namespace WebApplication1.Models
     {
         public Brand()
         {
-            Items = new HashSet<Items>();
+            //Items = new HashSet<Items>();
         }
 
         public string BrandId { get; set; }
@@ -19,6 +19,6 @@ namespace WebApplication1.Models
         public DateTime? AddedAt { get; set; }
         public DateTime? ModifiedAt { get; set; }
 
-        public virtual ICollection<Items> Items { get; set; }
+        //public virtual ICollection<Items> Items { get; set; }
     }
 }

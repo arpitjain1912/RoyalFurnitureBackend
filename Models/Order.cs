@@ -16,6 +16,9 @@ namespace WebApplication1.Models
         }
 
         public int OrderId { get; set; }
+        public string OrderInvoice { get; set; }
+        public int IsAdjustment { get; set; }
+        public int IsGst { get; set; }
         public int CustomerId { get; set; }
         public int StaffId { get; set; }
         public float Amount { get; set; }

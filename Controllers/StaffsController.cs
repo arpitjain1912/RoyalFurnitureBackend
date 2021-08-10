@@ -6,6 +6,8 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using WebApplication1.Models;
+using WebApplication1.Filters;
+using WebApplication1.Wrappers;
 
 namespace WebApplication1.Controllers
 {
@@ -24,7 +26,8 @@ namespace WebApplication1.Controllers
         [HttpGet]
         public async Task<ActionResult<IEnumerable<Staff>>> GetStaff()
         {
-            return await _context.Staff.ToListAsync();
+            var response = await _context.Staff.ToListAsync();
+            return Ok(new Response<List<Staff>>(response));
         }
 
         // GET: api/Staffs/5
@@ -38,7 +41,7 @@ namespace WebApplication1.Controllers
                 return NotFound();
             }
 
-            return staff;
+            return Ok(new Response<Staff>(staff));
         }
 
         // PUT: api/Staffs/5
@@ -79,6 +82,14 @@ namespace WebApplication1.Controllers
         [HttpPost]
         public async Task<ActionResult<Staff>> PostStaff(Staff staff)
         {
+            DateTime aDate = DateTime.Now;
+            staff.AddedAt = aDate;
+
+            int id = 0;
+            id = await _context.Staff.MaxAsync(x => (int?)x.StaffId) ?? 0;
+            id++;
+            staff.StaffId = id;
+
             _context.Staff.Add(staff);
             try
             {

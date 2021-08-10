@@ -12,20 +12,20 @@ namespace WebApplication1.Models
         public CurrentStock()
         {
             CostPrice = new HashSet<CostPrice>();
-            OrderItem = new HashSet<OrderItem>();
-            PurchaseItem = new HashSet<PurchaseItem>();
+            //OrderItem = new HashSet<OrderItem>();
+            //PurchaseItem = new HashSet<PurchaseItem>();
         }
 
         public string ItemName { get; set; }
         public int StoreId { get; set; }
-        public int CostPriceId { get; set; }//useless
+        public int CostPriceId { get; set; }
         public int TotalQuantityInStore { get; set; }
         public int TotalQuantityLeft { get; set; }
         public DateTime? AddedAt { get; set; }
         public DateTime? ModifiedAt { get; set; }
 
         public virtual ICollection<CostPrice> CostPrice { get; set; }
-        public virtual ICollection<OrderItem> OrderItem { get; set; }
-        public virtual ICollection<PurchaseItem> PurchaseItem { get; set; }
+        //public virtual ICollection<OrderItem> OrderItem { get; set; }
+        //public virtual ICollection<PurchaseItem> PurchaseItem { get; set; }
     }
 }

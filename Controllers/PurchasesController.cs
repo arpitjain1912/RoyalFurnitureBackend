@@ -6,6 +6,8 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using WebApplication1.Models;
+using WebApplication1.Filters;
+using WebApplication1.Wrappers;
 
 namespace WebApplication1.Controllers
 {
@@ -22,9 +24,12 @@ namespace WebApplication1.Controllers
 
         // GET: api/Purchases
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<Purchase>>> GetPurchase()
+        public async Task<ActionResult<IEnumerable<Purchase>>> GetPurchase([FromQuery] PaginationFilter page)
         {
-            return await _context.Purchase.ToListAsync();
+            PaginationFilter p = new PaginationFilter(page.PageNumber, page.PageSize);
+            var pagedresponse = await _context.Purchase.Skip((p.PageNumber - 1) * p.PageSize).Take(p.PageSize).Include("Vendor").Include("PurchaseItem.Store").ToListAsync();
+            var totalcount = await _context.Purchase.CountAsync();
+            return Ok(new PagedResponse<List<Purchase>>(pagedresponse, totalcount, p.PageNumber, p.PageSize));
         }
 
         // GET: api/Purchases/5
@@ -38,7 +43,7 @@ namespace WebApplication1.Controllers
                 return NotFound();
             }
 
-            return purchase;
+            return Ok(new Response<Purchase>(purchase));
         }
 
         // PUT: api/Purchases/5

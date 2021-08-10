@@ -6,6 +6,8 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using WebApplication1.Models;
+using WebApplication1.Filters;
+using WebApplication1.Wrappers;
 
 namespace WebApplication1.Controllers
 {
@@ -22,15 +24,23 @@ namespace WebApplication1.Controllers
 
         // GET: api/CurrentStocks
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<CurrentStock>>> GetCurrentStock()
+        public async Task<ActionResult<IEnumerable<CurrentStock>>> GetCurrentStock([FromQuery] String ItemName)
         {
-            return await _context.CurrentStock.ToListAsync();
+            
+            if (ItemName != null)
+            {
+                var response1 = await _context.CurrentStock.Where(x=>x.ItemName==ItemName).ToListAsync();
+                return Ok(new Response<List<CurrentStock>>(response1));
+            }
+            var response = await _context.CurrentStock.Include("CostPrice").ToListAsync();
+            return Ok(new Response<List<CurrentStock>>(response));
         }
 
         // GET: api/CurrentStocks/5
         [HttpGet("{id}")]
-        public async Task<ActionResult<CurrentStock>> GetCurrentStock(string id)
+        public async Task<ActionResult<CurrentStock>> GetCurrentStock(string id,int x)
         {
+            //here int x is added just to differentiate the two get definations. x will be remove later once more filter parameters will be added above.
             var currentStock = await _context.CurrentStock.FindAsync(id);
 
             if (currentStock == null)
@@ -38,7 +48,7 @@ namespace WebApplication1.Controllers
                 return NotFound();
             }
 
-            return currentStock;
+            return Ok(new Response<CurrentStock>(currentStock));
         }
 
         // PUT: api/CurrentStocks/5

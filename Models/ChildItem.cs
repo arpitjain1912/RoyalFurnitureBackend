@@ -12,6 +12,8 @@ namespace WebApplication1.Models
         public string ItemName { get; set; }
         public string ChildItemName { get; set; }
         public int NumberOfCopy { get; set; }
+        public DateTime? AddedAt { get; set; }
+        public DateTime? ModifiedAt { get; set; }
 
         public virtual Items ItemNameNavigation { get; set; }
     }

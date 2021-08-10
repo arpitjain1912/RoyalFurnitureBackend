@@ -6,6 +6,8 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using WebApplication1.Models;
+using WebApplication1.Filters;
+using WebApplication1.Wrappers;
 
 namespace WebApplication1.Controllers
 {
@@ -24,7 +26,8 @@ namespace WebApplication1.Controllers
         [HttpGet]
         public async Task<ActionResult<IEnumerable<ChildItem>>> GetChildItem()
         {
-            return await _context.ChildItem.ToListAsync();
+            var response = await _context.ChildItem.Include("ItemNameNavigation").ToListAsync();
+            return Ok(new Response<List<ChildItem>>(response));
         }
 
         // GET: api/ChildItems/5
@@ -38,7 +41,7 @@ namespace WebApplication1.Controllers
                 return NotFound();
             }
 
-            return childItem;
+            return Ok(new Response<ChildItem>(childItem)); 
         }
 
         // PUT: api/ChildItems/5
@@ -79,6 +82,9 @@ namespace WebApplication1.Controllers
         [HttpPost]
         public async Task<ActionResult<ChildItem>> PostChildItem(ChildItem childItem)
         {
+            DateTime aDate = DateTime.Now;
+            childItem.AddedAt = aDate;
+
             _context.ChildItem.Add(childItem);
             try
             {

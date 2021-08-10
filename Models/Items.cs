@@ -12,8 +12,8 @@ namespace WebApplication1.Models
         public Items()
         {
             ChildItem = new HashSet<ChildItem>();
-            OrderItem = new HashSet<OrderItem>();
-            PurchaseItem = new HashSet<PurchaseItem>();
+            //OrderItem = new HashSet<OrderItem>();
+            //PurchaseItem = new HashSet<PurchaseItem>();
         }
 
         public string ItemName { get; set; }
@@ -34,7 +34,7 @@ namespace WebApplication1.Models
         public virtual Brand Brand { get; set; }
         public virtual Category Category { get; set; }
         public virtual ICollection<ChildItem> ChildItem { get; set; }
-        public virtual ICollection<OrderItem> OrderItem { get; set; }
-        public virtual ICollection<PurchaseItem> PurchaseItem { get; set; }
+        //public virtual ICollection<OrderItem> OrderItem { get; set; }
+        //public virtual ICollection<PurchaseItem> PurchaseItem { get; set; }
     }
 }

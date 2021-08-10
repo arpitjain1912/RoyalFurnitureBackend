@@ -6,6 +6,8 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using WebApplication1.Models;
+using WebApplication1.Filters;
+using WebApplication1.Wrappers;
 
 namespace WebApplication1.Controllers
 {
@@ -24,7 +26,8 @@ namespace WebApplication1.Controllers
         [HttpGet]
         public async Task<ActionResult<IEnumerable<Brand>>> GetBrand()
         {
-            return await _context.Brand.ToListAsync();
+            var response= await _context.Brand.ToListAsync();
+            return Ok(new Response<List<Brand>> (response));
         }
 
         // GET: api/Brands/5
@@ -38,7 +41,7 @@ namespace WebApplication1.Controllers
                 return NotFound();
             }
 
-            return brand;
+            return Ok(new Response<Brand>(brand));
         }
 
         // PUT: api/Brands/5
@@ -79,6 +82,13 @@ namespace WebApplication1.Controllers
         [HttpPost]
         public async Task<ActionResult<Brand>> PostBrand(Brand brand)
         {
+            DateTime aDate = DateTime.Now;
+            int id = 0;
+            id = await _context.Brand.MaxAsync(x => (int?)Convert.ToInt32(x.BrandId) )?? 0;
+            id++;
+            brand.BrandId = Convert.ToString(id);
+            brand.AddedAt = aDate;
+
             _context.Brand.Add(brand);
             try
             {

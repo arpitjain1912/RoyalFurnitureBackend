@@ -6,6 +6,8 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using WebApplication1.Models;
+using WebApplication1.Filters;
+using WebApplication1.Wrappers;
 
 namespace WebApplication1.Controllers
 {
@@ -24,7 +26,8 @@ namespace WebApplication1.Controllers
         [HttpGet]
         public async Task<ActionResult<IEnumerable<Category>>> GetCategory()
         {
-            return await _context.Category.ToListAsync();
+            var response = await _context.Category.ToListAsync();
+            return Ok(new Response<List<Category>>(response));
         }
 
         // GET: api/Categories/5
@@ -38,7 +41,7 @@ namespace WebApplication1.Controllers
                 return NotFound();
             }
 
-            return category;
+            return Ok(new Response<Category>(category));
         }
 
         // PUT: api/Categories/5
@@ -79,6 +82,13 @@ namespace WebApplication1.Controllers
         [HttpPost]
         public async Task<ActionResult<Category>> PostCategory(Category category)
         {
+            DateTime aDate = DateTime.Now;
+            int id = 0;
+            id = await _context.Category.MaxAsync(x => (int?)Convert.ToInt32(x.CategoryId)) ?? 0;
+            id++;
+            category.CategoryId = Convert.ToString(id);
+            category.AddedAt = aDate;
+
             _context.Category.Add(category);
             try
             {

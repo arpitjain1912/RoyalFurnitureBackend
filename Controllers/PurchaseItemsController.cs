@@ -6,6 +6,8 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using WebApplication1.Models;
+using WebApplication1.Filters;
+using WebApplication1.Wrappers;
 
 namespace WebApplication1.Controllers
 {
@@ -24,7 +26,8 @@ namespace WebApplication1.Controllers
         [HttpGet]
         public async Task<ActionResult<IEnumerable<PurchaseItem>>> GetPurchaseItem()
         {
-            return await _context.PurchaseItem.ToListAsync();
+            var response = await _context.PurchaseItem.Include("Store").Include("ItemNameNavigation").ToListAsync();
+            return Ok(new Response<List<PurchaseItem>>(response));
         }
 
         // GET: api/PurchaseItems/5
@@ -38,7 +41,7 @@ namespace WebApplication1.Controllers
                 return NotFound();
             }
 
-            return purchaseItem;
+            return Ok(new Response<PurchaseItem>(purchaseItem));
         }
 
         // PUT: api/PurchaseItems/5

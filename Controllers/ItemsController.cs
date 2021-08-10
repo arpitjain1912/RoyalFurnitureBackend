@@ -6,6 +6,8 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using WebApplication1.Models;
+using WebApplication1.Filters;
+using WebApplication1.Wrappers;
 
 namespace WebApplication1.Controllers
 {
@@ -22,9 +24,14 @@ namespace WebApplication1.Controllers
 
         // GET: api/Items
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<Items>>> GetItems()
+        public async Task<ActionResult<IEnumerable<Items>>> GetItems([FromQuery] PaginationFilter page)
         {
-            return await _context.Items.Include("Brand").Include("Category").Include("ChildItem").ToListAsync();
+            //Console.WriteLine(page.PageSize);
+            //Console.WriteLine(page.PageNumber);
+            PaginationFilter p = new PaginationFilter(page.PageNumber, page.PageSize);
+            var pagedresponse = await _context.Items.Skip((p.PageNumber - 1) * p.PageSize).Take(p.PageSize).Include("Brand").Include("Category").Include("ChildItem").ToListAsync();
+            var totalcount = await _context.Items.CountAsync();
+            return Ok(new PagedResponse<List<Items>>(pagedresponse,totalcount, p.PageNumber, p.PageSize));
         }
 
         // GET: api/Items/5
@@ -38,7 +45,7 @@ namespace WebApplication1.Controllers
                 return NotFound();
             }
 
-            return items;
+            return Ok(new Response<Items>(items));
         }
 
         // PUT: api/Items/5
@@ -79,8 +86,35 @@ namespace WebApplication1.Controllers
         [HttpPost]
         public async Task<ActionResult<Items>> PostItems(Items items)
         {
+            //Auto update item id(not a key) and insert added at.
             DateTime aDate = DateTime.Now;
             items.AddedAt = aDate;
+
+            int id = 0;
+            id = await _context.Items.MaxAsync(x => (int?)x.ItemId) ?? 0;
+            id++;
+            items.ItemId = id;
+
+            //Auto update brand id and insert added at.
+            if (items.BrandId == null )
+            {
+                items.Brand.AddedAt = aDate;
+                int id2 = 0;
+                id2 = await _context.Brand.MaxAsync(x => (int?)Convert.ToInt32(x.BrandId)) ?? 0;
+                id2++;
+                items.Brand.BrandId = Convert.ToString(id2);
+            }
+
+            //auto update category id and insert added at.
+            if (items.CategoryId == null)
+            {
+                items.Category.AddedAt = aDate;
+                int id3 = 0;
+                id3 = await _context.Category.MaxAsync(x => (int?)Convert.ToInt32(x.CategoryId)) ?? 0;
+                id3++;
+                items.Category.CategoryId = Convert.ToString(id3);
+            }
+
             _context.Items.Add(items);
 
             try

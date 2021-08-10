@@ -6,6 +6,8 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using WebApplication1.Models;
+using WebApplication1.Filters;
+using WebApplication1.Wrappers;
 
 namespace WebApplication1.Controllers
 {
@@ -24,7 +26,8 @@ namespace WebApplication1.Controllers
         [HttpGet]
         public async Task<ActionResult<IEnumerable<Store>>> GetStore()
         {
-            return await _context.Store.ToListAsync();
+            var response = await _context.Store.ToListAsync();
+            return Ok(new Response<List<Store>>(response));
         }
 
         // GET: api/Stores/5
@@ -38,7 +41,7 @@ namespace WebApplication1.Controllers
                 return NotFound();
             }
 
-            return store;
+            return Ok(new Response<Store>(store));
         }
 
         // PUT: api/Stores/5
@@ -80,6 +83,14 @@ namespace WebApplication1.Controllers
         public async Task<ActionResult<Store>> PostStore(Store store)
         {
             DateTime aDate = DateTime.Now;
+            store.AddedAt = aDate;
+
+            int id = 0;
+            id = await _context.Store.MaxAsync(x => (int?)x.StoreId) ?? 0;
+            id++;
+
+            store.StoreId = id;
+
             _context.Store.Add(store);
             try
             {

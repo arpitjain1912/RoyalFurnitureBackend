@@ -6,6 +6,8 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using WebApplication1.Models;
+using WebApplication1.Filters;
+using WebApplication1.Wrappers;
 
 namespace WebApplication1.Controllers
 {
@@ -22,9 +24,15 @@ namespace WebApplication1.Controllers
 
         // GET: api/Customers
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<Customer>>> GetCustomer()
+        public async Task<ActionResult<IEnumerable<Customer>>> GetCustomer([FromQuery] String Phone)
         {
-            return await _context.Customer.ToListAsync();
+            if (Phone == null)
+            {
+                var response1 = await _context.Customer.ToListAsync();
+                return Ok(new Response<List<Customer>>(response1));
+            }
+            var response = await _context.Customer.Where(x => x.Phone==Phone).ToListAsync();
+            return Ok(new Response<List<Customer>>(response));
         }
 
         // GET: api/Customers/5
@@ -38,7 +46,7 @@ namespace WebApplication1.Controllers
                 return NotFound();
             }
 
-            return customer;
+            return Ok(new Response<Customer>(customer));
         }
 
         // PUT: api/Customers/5
@@ -79,6 +87,15 @@ namespace WebApplication1.Controllers
         [HttpPost]
         public async Task<ActionResult<Customer>> PostCustomer(Customer customer)
         {
+            DateTime aDate = DateTime.Now;
+            customer.AddedAt = aDate;
+
+            int id = 0;
+            id = await _context.Customer.MaxAsync(x => (int?)x.CustomerId) ?? 0;
+            id++;
+            customer.CustomerId = id;
+            
+
             _context.Customer.Add(customer);
             try
             {

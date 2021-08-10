@@ -6,6 +6,8 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using WebApplication1.Models;
+using WebApplication1.Filters;
+using WebApplication1.Wrappers;
 
 namespace WebApplication1.Controllers
 {
@@ -24,7 +26,8 @@ namespace WebApplication1.Controllers
         [HttpGet]
         public async Task<ActionResult<IEnumerable<SalesTransaction>>> GetSalesTransaction()
         {
-            return await _context.SalesTransaction.ToListAsync();
+            var response = await _context.SalesTransaction.ToListAsync();
+            return Ok(new Response<List<SalesTransaction>>(response));
         }
 
         // GET: api/SalesTransactions/5
@@ -38,7 +41,7 @@ namespace WebApplication1.Controllers
                 return NotFound();
             }
 
-            return salesTransaction;
+            return Ok(new Response<SalesTransaction>(salesTransaction));
         }
 
         // PUT: api/SalesTransactions/5
@@ -79,6 +82,15 @@ namespace WebApplication1.Controllers
         [HttpPost]
         public async Task<ActionResult<SalesTransaction>> PostSalesTransaction(SalesTransaction salesTransaction)
         {
+            DateTime aDate = DateTime.Now;
+            salesTransaction.AddedAt = aDate;
+
+            int id = 0;
+            id = await _context.SalesTransaction.MaxAsync(x => (int?)x.TransactionId) ?? 0;
+            id++;
+
+            salesTransaction.TransactionId = id;
+
             _context.SalesTransaction.Add(salesTransaction);
             try
             {
