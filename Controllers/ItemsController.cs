@@ -8,9 +8,11 @@ using Microsoft.EntityFrameworkCore;
 using WebApplication1.Models;
 using WebApplication1.Filters;
 using WebApplication1.Wrappers;
+using Microsoft.AspNetCore.Authorization;
 
 namespace WebApplication1.Controllers
 {
+    [Authorize]
     [Route("api/[controller]")]
     [ApiController]
     public class ItemsController : ControllerBase
@@ -24,14 +26,18 @@ namespace WebApplication1.Controllers
 
         // GET: api/Items
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<Items>>> GetItems([FromQuery] PaginationFilter page)
+        public async Task<ActionResult<IEnumerable<Items>>> GetItems([FromQuery] PaginationFilter page,[FromQuery] Items item)
         {
-            //Console.WriteLine(page.PageSize);
-            //Console.WriteLine(page.PageNumber);
+            IQueryable<Items> filterresponse;
+            filterresponse = _context.Items.AsQueryable();
             PaginationFilter p = new PaginationFilter(page.PageNumber, page.PageSize);
-            var pagedresponse = await _context.Items.Skip((p.PageNumber - 1) * p.PageSize).Take(p.PageSize).Include("Brand").Include("Category").Include("ChildItem").ToListAsync();
-            var totalcount = await _context.Items.CountAsync();
-            return Ok(new PagedResponse<List<Items>>(pagedresponse,totalcount, p.PageNumber, p.PageSize));
+            filterresponse =filterresponse.Skip((p.PageNumber - 1) * p.PageSize).Take(p.PageSize).Include("Brand").Include("Category").Include("ChildItem");
+
+            filterresponse=filter(item, filterresponse);
+            
+            var pagedresponse1 = await filterresponse.ToListAsync();
+            var totalcount1 = await filterresponse.CountAsync();
+            return Ok(new PagedResponse<List<Items>>(pagedresponse1,totalcount1, p.PageNumber, p.PageSize));
         }
 
         // GET: api/Items/5
@@ -221,6 +227,60 @@ namespace WebApplication1.Controllers
         private bool CurrentStockExists(string id)
         {
             return _context.CurrentStock.Any(e => e.ItemName == id);
+        }
+
+        private IQueryable<Items> filter(Items item,IQueryable<Items> filterresponse)
+        {
+            Console.WriteLine(item.Gstpercent);
+            if (item.ItemId != 0)
+            {
+                filterresponse = filterresponse.Where(x => x.ItemId == item.ItemId);
+            }
+            if (item.ItemName != null)
+            {
+                filterresponse = filterresponse.Where(x => x.ItemName == item.ItemName);
+            }
+            if (item.IsParent != 0)
+            {
+                filterresponse = filterresponse.Where(x => x.IsParent == item.IsParent);
+            }
+            if (item.ParentItemName != null)
+            {
+                filterresponse = filterresponse.Where(x => x.ParentItemName == item.ParentItemName);
+            }
+            if (item.NumberOfCopy != 0)
+            {
+                filterresponse = filterresponse.Where(x => x.NumberOfCopy == item.NumberOfCopy);
+            }
+            if (item.CategoryId != null)
+            {
+                filterresponse = filterresponse.Where(x => x.CategoryId == item.CategoryId);
+            }
+            if (item.BrandId != null)
+            {
+                filterresponse = filterresponse.Where(x => x.BrandId == item.BrandId);
+            }
+            if (item.Description != null)
+            {
+                filterresponse = filterresponse.Where(x => x.Description == item.Description);
+            }
+            if (item.Gstpercent != null)
+            {
+                filterresponse = filterresponse.Where(x => x.Gstpercent == item.Gstpercent);
+            }
+            if (item.Hsncode != null)
+            {
+                filterresponse = filterresponse.Where(x => x.Hsncode == item.Hsncode);
+            }
+            if (item.AliasCode != null)
+            {
+                filterresponse = filterresponse.Where(x => x.AliasCode == item.AliasCode);
+            }
+            if (item.ImageUrl != null)
+            {
+                filterresponse = filterresponse.Where(x => x.ImageUrl == item.ImageUrl);
+            }
+            return filterresponse;
         }
     }
 }

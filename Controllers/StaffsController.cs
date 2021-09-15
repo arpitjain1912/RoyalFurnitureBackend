@@ -8,9 +8,11 @@ using Microsoft.EntityFrameworkCore;
 using WebApplication1.Models;
 using WebApplication1.Filters;
 using WebApplication1.Wrappers;
+using Microsoft.AspNetCore.Authorization;
 
 namespace WebApplication1.Controllers
 {
+    [Authorize]
     [Route("api/[controller]")]
     [ApiController]
     public class StaffsController : ControllerBase
@@ -24,9 +26,27 @@ namespace WebApplication1.Controllers
 
         // GET: api/Staffs
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<Staff>>> GetStaff()
+        public async Task<ActionResult<IEnumerable<Staff>>> GetStaff([FromQuery] Staff staff)
         {
-            var response = await _context.Staff.ToListAsync();
+            IQueryable<Staff> filterresponse;
+            filterresponse = _context.Staff.AsQueryable();
+            if (staff.StaffId != 0)
+            {
+                filterresponse = filterresponse.Where(x => x.StaffId == staff.StaffId);
+            }
+            if (staff.Phone != null)
+            {
+                filterresponse = filterresponse.Where(x => x.Phone == staff.Phone);
+            }
+            if (staff.Address != null)
+            {
+                filterresponse = filterresponse.Where(x => x.Address == staff.Address);
+            }
+            if (staff.StaffName != null)
+            {
+                filterresponse = filterresponse.Where(x => x.StaffName == staff.StaffName);
+            }
+            var response = await filterresponse.ToListAsync();
             return Ok(new Response<List<Staff>>(response));
         }
 
@@ -129,6 +149,11 @@ namespace WebApplication1.Controllers
         private bool StaffExists(int id)
         {
             return _context.Staff.Any(e => e.StaffId == id);
+        }
+
+        private IQueryable<Order> filter(Order order, IQueryable<Order> filterresponse)
+        {
+            return filterresponse;
         }
     }
 }

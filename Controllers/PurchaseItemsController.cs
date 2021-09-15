@@ -8,9 +8,11 @@ using Microsoft.EntityFrameworkCore;
 using WebApplication1.Models;
 using WebApplication1.Filters;
 using WebApplication1.Wrappers;
+using Microsoft.AspNetCore.Authorization;
 
 namespace WebApplication1.Controllers
 {
+    [Authorize]
     [Route("api/[controller]")]
     [ApiController]
     public class PurchaseItemsController : ControllerBase
@@ -24,9 +26,31 @@ namespace WebApplication1.Controllers
 
         // GET: api/PurchaseItems
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<PurchaseItem>>> GetPurchaseItem()
+        public async Task<ActionResult<IEnumerable<PurchaseItem>>> GetPurchaseItem([FromQuery] PurchaseItem purchaseitem)
         {
-            var response = await _context.PurchaseItem.Include("Store").Include("ItemNameNavigation").ToListAsync();
+            IQueryable<PurchaseItem> filterresponse;
+            filterresponse = _context.PurchaseItem.AsQueryable();
+            if (purchaseitem.PurchaseId != 0)
+            {
+                filterresponse = filterresponse.Where(x => x.PurchaseId == purchaseitem.PurchaseId);
+            }
+            if (purchaseitem.StoreId != 0)
+            {
+                filterresponse = filterresponse.Where(x => x.StoreId == purchaseitem.StoreId);
+            }
+            if (purchaseitem.Quantity != 0)
+            {
+                filterresponse = filterresponse.Where(x => x.Quantity == purchaseitem.Quantity);
+            }
+            if (purchaseitem.CostPrice != 0)
+            {
+                filterresponse = filterresponse.Where(x => x.CostPrice == purchaseitem.CostPrice);
+            }
+            if (purchaseitem.ItemName != null)
+            {
+                filterresponse = filterresponse.Where(x => x.ItemName == purchaseitem.ItemName);
+            }
+            var response = await filterresponse.Include("Store").Include("ItemNameNavigation").ToListAsync();
             return Ok(new Response<List<PurchaseItem>>(response));
         }
 
@@ -123,6 +147,11 @@ namespace WebApplication1.Controllers
         private bool PurchaseItemExists(int id)
         {
             return _context.PurchaseItem.Any(e => e.PurchaseId == id);
+        }
+
+        private IQueryable<Order> filter(Order order, IQueryable<Order> filterresponse)
+        {
+            return filterresponse;
         }
     }
 }

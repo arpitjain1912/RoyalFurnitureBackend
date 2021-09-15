@@ -8,9 +8,11 @@ using Microsoft.EntityFrameworkCore;
 using WebApplication1.Models;
 using WebApplication1.Filters;
 using WebApplication1.Wrappers;
+using Microsoft.AspNetCore.Authorization;
 
 namespace WebApplication1.Controllers
 {
+    [Authorize]
     [Route("api/[controller]")]
     [ApiController]
     public class CategoriesController : ControllerBase
@@ -24,9 +26,16 @@ namespace WebApplication1.Controllers
 
         // GET: api/Categories
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<Category>>> GetCategory()
+        public async Task<ActionResult<IEnumerable<Category>>> GetCategory([FromQuery] Category category)
         {
-            var response = await _context.Category.ToListAsync();
+
+            IQueryable<Category> filterresponse;
+            filterresponse = _context.Category.AsQueryable();
+            if (category.CategoryName != null)
+            {
+                filterresponse = filterresponse.Where(x => x.CategoryName == category.CategoryName);
+            }
+            var response = await filterresponse.ToListAsync();
             return Ok(new Response<List<Category>>(response));
         }
 
@@ -128,6 +137,11 @@ namespace WebApplication1.Controllers
         private bool CategoryExists(string id)
         {
             return _context.Category.Any(e => e.CategoryId == id);
+        }
+
+        private IQueryable<Order> filter(Order order, IQueryable<Order> filterresponse)
+        {
+            return filterresponse;
         }
     }
 }

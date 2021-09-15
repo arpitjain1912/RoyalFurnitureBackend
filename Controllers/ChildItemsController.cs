@@ -8,9 +8,11 @@ using Microsoft.EntityFrameworkCore;
 using WebApplication1.Models;
 using WebApplication1.Filters;
 using WebApplication1.Wrappers;
+using Microsoft.AspNetCore.Authorization;
 
 namespace WebApplication1.Controllers
 {
+    [Authorize]
     [Route("api/[controller]")]
     [ApiController]
     public class ChildItemsController : ControllerBase
@@ -24,9 +26,24 @@ namespace WebApplication1.Controllers
 
         // GET: api/ChildItems
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<ChildItem>>> GetChildItem()
+        public async Task<ActionResult<IEnumerable<ChildItem>>> GetChildItem([FromQuery] ChildItem childitem)
         {
-            var response = await _context.ChildItem.Include("ItemNameNavigation").ToListAsync();
+            IQueryable<ChildItem> filterresponse;
+            filterresponse = _context.ChildItem.AsQueryable();
+            if (childitem.ItemName != null)
+            {
+                filterresponse = filterresponse.Where(x => x.ItemName == childitem.ItemName);
+            }
+            if(childitem.ChildItemName != null)
+            {
+                filterresponse = filterresponse.Where(x => x.ChildItemName == childitem.ChildItemName);
+            }
+            if (childitem.NumberOfCopy != 0)
+            {
+                filterresponse = filterresponse.Where(x => x.NumberOfCopy == childitem.NumberOfCopy);
+            }
+
+            var response = await filterresponse.Include("ItemNameNavigation").ToListAsync();
             return Ok(new Response<List<ChildItem>>(response));
         }
 
@@ -124,6 +141,11 @@ namespace WebApplication1.Controllers
         private bool ChildItemExists(string id)
         {
             return _context.ChildItem.Any(e => e.ItemName == id);
+        }
+
+        private IQueryable<Order> filter(Order order, IQueryable<Order> filterresponse)
+        {
+            return filterresponse;
         }
     }
 }

@@ -8,9 +8,11 @@ using Microsoft.EntityFrameworkCore;
 using WebApplication1.Models;
 using WebApplication1.Filters;
 using WebApplication1.Wrappers;
+using Microsoft.AspNetCore.Authorization;
 
 namespace WebApplication1.Controllers
 {
+    [Authorize]
     [Route("api/[controller]")]
     [ApiController]
     public class CurrentStocksController : ControllerBase
@@ -24,15 +26,31 @@ namespace WebApplication1.Controllers
 
         // GET: api/CurrentStocks
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<CurrentStock>>> GetCurrentStock([FromQuery] String ItemName)
+        public async Task<ActionResult<IEnumerable<CurrentStock>>> GetCurrentStock([FromQuery] CurrentStock currentstock)
         {
-            
-            if (ItemName != null)
+            IQueryable<CurrentStock> filterresponse;
+            filterresponse = _context.CurrentStock.AsQueryable();
+            if (currentstock.ItemName != null)
             {
-                var response1 = await _context.CurrentStock.Where(x=>x.ItemName==ItemName).ToListAsync();
-                return Ok(new Response<List<CurrentStock>>(response1));
+                filterresponse = filterresponse.Where(x => x.ItemName == currentstock.ItemName);
             }
-            var response = await _context.CurrentStock.Include("CostPrice").ToListAsync();
+            if (currentstock.StoreId != 0)
+            {
+                filterresponse = filterresponse.Where(x => x.StoreId == currentstock.StoreId);
+            }
+            if (currentstock.CostPriceId != 0)
+            {
+                filterresponse = filterresponse.Where(x => x.CostPriceId == currentstock.CostPriceId);
+            }
+            if (currentstock.TotalQuantityInStore != 0)
+            {
+                filterresponse = filterresponse.Where(x => x.TotalQuantityInStore == currentstock.TotalQuantityInStore);
+            }
+            if (currentstock.TotalQuantityLeft != 0)
+            {
+                filterresponse = filterresponse.Where(x => x.TotalQuantityLeft == currentstock.TotalQuantityLeft);
+            }
+            var response = await filterresponse.Include("CostPrice").ToListAsync();
             return Ok(new Response<List<CurrentStock>>(response));
         }
 
@@ -128,6 +146,11 @@ namespace WebApplication1.Controllers
         private bool CurrentStockExists(string id)
         {
             return _context.CurrentStock.Any(e => e.ItemName == id);
+        }
+
+        private IQueryable<Order> filter(Order order, IQueryable<Order> filterresponse)
+        {
+            return filterresponse;
         }
     }
 }

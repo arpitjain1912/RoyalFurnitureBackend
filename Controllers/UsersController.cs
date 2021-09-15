@@ -8,9 +8,11 @@ using Microsoft.EntityFrameworkCore;
 using WebApplication1.Models;
 using WebApplication1.Filters;
 using WebApplication1.Wrappers;
+using Microsoft.AspNetCore.Authorization;
 
 namespace WebApplication1.Controllers
 {
+    [Authorize]
     [Route("api/[controller]")]
     [ApiController]
     public class UsersController : ControllerBase
@@ -24,9 +26,23 @@ namespace WebApplication1.Controllers
 
         // GET: api/Users
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<User>>> GetUser()
+        public async Task<ActionResult<IEnumerable<User>>> GetUser([FromQuery] User user)
         {
-            var response = await _context.User.ToListAsync();
+            IQueryable<User> filterresponse;
+            filterresponse = _context.User.AsQueryable();
+            if (user.UserId != null)
+            {
+                filterresponse = filterresponse.Where(x => x.UserId == user.UserId);
+            }
+            if (user.UserName != null)
+            {
+                filterresponse = filterresponse.Where(x => x.UserName == user.UserName);
+            }
+            if (user.AccessLevel != null)
+            {
+                filterresponse = filterresponse.Where(x => x.AccessLevel == user.AccessLevel);
+            }
+            var response = await filterresponse.ToListAsync();
             return Ok(new Response<List<User>>(response));
         }
 
@@ -48,7 +64,7 @@ namespace WebApplication1.Controllers
         // To protect from overposting attacks, enable the specific properties you want to bind to, for
         // more details, see https://go.microsoft.com/fwlink/?linkid=2123754.
         [HttpPut("{id}")]
-        public async Task<IActionResult> PutUser(int id, User user)
+        public async Task<IActionResult> PutUser(string id, User user)
         {
             if (id != user.UserId)
             {
@@ -86,10 +102,10 @@ namespace WebApplication1.Controllers
             user.AddedAt = aDate;
 
             int id = 0;
-            id = await _context.User.MaxAsync(x => (int?)x.UserId) ?? 0;
+            id = await _context.User.MaxAsync(x => (int?)Convert.ToInt32(x.UserId)) ?? 0;
             id++;
 
-            user.UserId = id;
+            user.UserId = Convert.ToString(id);
 
             _context.User.Add(user);
             try
@@ -113,7 +129,7 @@ namespace WebApplication1.Controllers
 
         // DELETE: api/Users/5
         [HttpDelete("{id}")]
-        public async Task<ActionResult<User>> DeleteUser(int id)
+        public async Task<ActionResult<User>> DeleteUser(string id)
         {
             var user = await _context.User.FindAsync(id);
             if (user == null)
@@ -127,9 +143,14 @@ namespace WebApplication1.Controllers
             return user;
         }
 
-        private bool UserExists(int id)
+        private bool UserExists(string id)
         {
             return _context.User.Any(e => e.UserId == id);
+        }
+
+        private IQueryable<Order> filter(Order order, IQueryable<Order> filterresponse)
+        {
+            return filterresponse;
         }
     }
 }

@@ -8,9 +8,11 @@ using Microsoft.EntityFrameworkCore;
 using WebApplication1.Models;
 using WebApplication1.Filters;
 using WebApplication1.Wrappers;
+using Microsoft.AspNetCore.Authorization;
 
 namespace WebApplication1.Controllers
 {
+    [Authorize]
     [Route("api/[controller]")]
     [ApiController]
     public class StoresController : ControllerBase
@@ -24,9 +26,27 @@ namespace WebApplication1.Controllers
 
         // GET: api/Stores
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<Store>>> GetStore()
+        public async Task<ActionResult<IEnumerable<Store>>> GetStore([FromQuery] Store store)
         {
-            var response = await _context.Store.ToListAsync();
+            IQueryable<Store> filterresponse;
+            filterresponse = _context.Store.AsQueryable();
+            if (store.StoreId != 0)
+            {
+                filterresponse = filterresponse.Where(x => x.StoreId == store.StoreId);
+            }
+            if (store.StoreName != null)
+            {
+                filterresponse = filterresponse.Where(x => x.StoreName == store.StoreName);
+            }
+            if (store.Phone != null)
+            {
+                filterresponse = filterresponse.Where(x => x.Phone == store.Phone);
+            }
+            if (store.Address != null)
+            {
+                filterresponse = filterresponse.Where(x => x.Address == store.Address);
+            }
+            var response = await filterresponse.ToListAsync();
             return Ok(new Response<List<Store>>(response));
         }
 
@@ -164,6 +184,11 @@ namespace WebApplication1.Controllers
         private bool CurrentStockExists(string id)
         {
             return _context.CurrentStock.Any(e => e.ItemName == id);
+        }
+
+        private IQueryable<Order> filter(Order order, IQueryable<Order> filterresponse)
+        {
+            return filterresponse;
         }
     }
 }

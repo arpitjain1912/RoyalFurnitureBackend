@@ -8,9 +8,11 @@ using Microsoft.EntityFrameworkCore;
 using WebApplication1.Models;
 using WebApplication1.Filters;
 using WebApplication1.Wrappers;
+using Microsoft.AspNetCore.Authorization;
 
 namespace WebApplication1.Controllers
 {
+    [Authorize]
     [Route("api/[controller]")]
     [ApiController]
     public class SalesTransactionsController : ControllerBase
@@ -24,9 +26,27 @@ namespace WebApplication1.Controllers
 
         // GET: api/SalesTransactions
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<SalesTransaction>>> GetSalesTransaction()
+        public async Task<ActionResult<IEnumerable<SalesTransaction>>> GetSalesTransaction([FromQuery] SalesTransaction salestransaction)
         {
-            var response = await _context.SalesTransaction.ToListAsync();
+            IQueryable<SalesTransaction> filterresponse;
+            filterresponse = _context.SalesTransaction.AsQueryable();
+            if (salestransaction.TransactionId != 0)
+            {
+                filterresponse = filterresponse.Where(x => x.TransactionId == salestransaction.TransactionId);
+            }
+            if (salestransaction.OrderId != 0)
+            {
+                filterresponse = filterresponse.Where(x => x.OrderId == salestransaction.OrderId);
+            }
+            if (salestransaction.ModeOfPayment != 0)
+            {
+                filterresponse = filterresponse.Where(x => x.ModeOfPayment == salestransaction.ModeOfPayment);
+            }
+            if (salestransaction.AmountPaid != 0)
+            {
+                filterresponse = filterresponse.Where(x => x.AmountPaid == salestransaction.AmountPaid);
+            }
+            var response = await filterresponse.ToListAsync();
             return Ok(new Response<List<SalesTransaction>>(response));
         }
 
@@ -130,6 +150,11 @@ namespace WebApplication1.Controllers
         private bool SalesTransactionExists(int id)
         {
             return _context.SalesTransaction.Any(e => e.TransactionId == id);
+        }
+
+        private IQueryable<Order> filter(Order order, IQueryable<Order> filterresponse)
+        {
+            return filterresponse;
         }
     }
 }

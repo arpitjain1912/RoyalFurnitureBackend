@@ -8,9 +8,11 @@ using Microsoft.EntityFrameworkCore;
 using WebApplication1.Models;
 using WebApplication1.Filters;
 using WebApplication1.Wrappers;
+using Microsoft.AspNetCore.Authorization;
 
 namespace WebApplication1.Controllers
 {
+    [Authorize]
     [Route("api/[controller]")]
     [ApiController]
     public class CostPricesController : ControllerBase
@@ -24,9 +26,27 @@ namespace WebApplication1.Controllers
 
         // GET: api/CostPrices
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<CostPrice>>> GetCostPrice()
+        public async Task<ActionResult<IEnumerable<CostPrice>>> GetCostPrice([FromQuery] CostPrice costprice)
         {
-            var response = await _context.CostPrice.ToListAsync();
+            IQueryable<CostPrice> filterresponse;
+            filterresponse = _context.CostPrice.AsQueryable();
+            if (costprice.ItemName != null)
+            {
+                filterresponse = filterresponse.Where(x => x.ItemName == costprice.ItemName);
+            }
+            if (costprice.StoreId != 0)
+            {
+                filterresponse = filterresponse.Where(x => x.StoreId == costprice.StoreId);
+            }
+            if (costprice.CostPriceId != 0)
+            {
+                filterresponse = filterresponse.Where(x => x.CostPriceId == costprice.CostPriceId);
+            }
+            if(costprice.Quantityinstore != 0)
+            {
+                filterresponse = filterresponse.Where(x => x.Quantityinstore == costprice.Quantityinstore);
+            }
+            var response = await filterresponse.ToListAsync();
             return Ok(new Response<List<CostPrice>>(response));
         }
 
@@ -129,6 +149,11 @@ namespace WebApplication1.Controllers
         private bool CostPriceExists(int id)
         {
             return _context.CostPrice.Any(e => e.CostPriceId == id);
+        }
+
+        private IQueryable<Order> filter(Order order, IQueryable<Order> filterresponse)
+        {
+            return filterresponse;
         }
     }
 }

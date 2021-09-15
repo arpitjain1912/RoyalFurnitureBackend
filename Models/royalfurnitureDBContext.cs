@@ -23,6 +23,7 @@ namespace WebApplication1.Models
         public virtual DbSet<Category> Category { get; set; }
         public virtual DbSet<ChildItem> ChildItem { get; set; }
         public virtual DbSet<CostPrice> CostPrice { get; set; }
+        public virtual DbSet<CostPriceAssigned> CostPriceAssigned { get; set; }
         public virtual DbSet<CurrentStock> CurrentStock { get; set; }
         public virtual DbSet<Customer> Customer { get; set; }
         public virtual DbSet<Items> Items { get; set; }
@@ -123,6 +124,26 @@ namespace WebApplication1.Models
                     .HasForeignKey(d => new { d.ItemName, d.StoreId })
                     .OnDelete(DeleteBehavior.ClientSetNull)
                     .HasConstraintName("FK__CostPrice__1209AD79");
+            });
+
+            modelBuilder.Entity<CostPriceAssigned>(entity =>
+            {
+                entity.HasKey(e => new { e.ItemName, e.OrderId, e.StoreId, e.CostPrice })
+                    .HasName("PK__CostPric__CC6186A007F9442C");
+
+                entity.Property(e => e.ItemName)
+                    .HasMaxLength(128)
+                    .IsUnicode(false);
+
+                entity.Property(e => e.AddedAt).HasColumnType("datetime");
+
+                entity.Property(e => e.ModifiedAt).HasColumnType("datetime");
+
+                entity.HasOne(d => d.OrderItem)
+                    .WithMany(p => p.CostPriceAssigned)
+                    .HasForeignKey(d => new { d.ItemName, d.OrderId, d.StoreId })
+                    .OnDelete(DeleteBehavior.ClientSetNull)
+                    .HasConstraintName("FK__CostPriceAssigne__2116E6DF");
             });
 
             modelBuilder.Entity<CurrentStock>(entity =>
@@ -437,7 +458,9 @@ namespace WebApplication1.Models
 
             modelBuilder.Entity<User>(entity =>
             {
-                entity.Property(e => e.UserId).ValueGeneratedNever();
+                entity.Property(e => e.UserId)
+                    .HasMaxLength(128)
+                    .IsUnicode(false);
 
                 entity.Property(e => e.AccessLevel)
                     .HasMaxLength(128)
@@ -445,7 +468,27 @@ namespace WebApplication1.Models
 
                 entity.Property(e => e.AddedAt).HasColumnType("datetime");
 
+                entity.Property(e => e.Email)
+                    .IsRequired()
+                    .HasMaxLength(128)
+                    .IsUnicode(false);
+
+                entity.Property(e => e.FirstName)
+                    .IsRequired()
+                    .HasMaxLength(128)
+                    .IsUnicode(false);
+
+                entity.Property(e => e.LastName)
+                    .IsRequired()
+                    .HasMaxLength(128)
+                    .IsUnicode(false);
+
                 entity.Property(e => e.ModifiedAt).HasColumnType("datetime");
+
+                entity.Property(e => e.Password)
+                    .IsRequired()
+                    .HasMaxLength(128)
+                    .IsUnicode(false);
 
                 entity.Property(e => e.UserName)
                     .IsRequired()

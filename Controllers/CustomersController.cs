@@ -8,9 +8,11 @@ using Microsoft.EntityFrameworkCore;
 using WebApplication1.Models;
 using WebApplication1.Filters;
 using WebApplication1.Wrappers;
+using Microsoft.AspNetCore.Authorization;
 
 namespace WebApplication1.Controllers
 {
+    [Authorize]
     [Route("api/[controller]")]
     [ApiController]
     public class CustomersController : ControllerBase
@@ -24,14 +26,36 @@ namespace WebApplication1.Controllers
 
         // GET: api/Customers
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<Customer>>> GetCustomer([FromQuery] String Phone)
+        public async Task<ActionResult<IEnumerable<Customer>>> GetCustomer([FromQuery] Customer customer)
         {
-            if (Phone == null)
+            IQueryable<Customer> filterresponse;
+            filterresponse = _context.Customer.AsQueryable();
+            if (customer.CustomerName != null)
             {
-                var response1 = await _context.Customer.ToListAsync();
-                return Ok(new Response<List<Customer>>(response1));
+                filterresponse = filterresponse.Where(x => x.CustomerName == customer.CustomerName);
             }
-            var response = await _context.Customer.Where(x => x.Phone==Phone).ToListAsync();
+            if (customer.CustomerId!=0)
+            {
+                filterresponse = filterresponse.Where(x => x.CustomerId == customer.CustomerId);
+            }
+            if (customer.Phone != null)
+            {
+                filterresponse = filterresponse.Where(x => x.Phone == customer.Phone);
+            }
+            if (customer.Address != null)
+            {
+                filterresponse = filterresponse.Where(x => x.Address == customer.Address);
+            }
+            if (customer.Email != null)
+            {
+                filterresponse = filterresponse.Where(x => x.Email == customer.Email);
+            }
+            if (customer.Gstno != null)
+            {
+                filterresponse = filterresponse.Where(x => x.Gstno == customer.Gstno);
+            }
+            
+            var response = await filterresponse.ToListAsync();
             return Ok(new Response<List<Customer>>(response));
         }
 
@@ -136,5 +160,10 @@ namespace WebApplication1.Controllers
         {
             return _context.Customer.Any(e => e.CustomerId == id);
         }
+
+        /*private IQueryable<T> filter(T order, IQueryable<T> filterresponse)
+        {
+            return filterresponse;
+        }*/
     }
 }

@@ -8,9 +8,11 @@ using Microsoft.EntityFrameworkCore;
 using WebApplication1.Models;
 using WebApplication1.Filters;
 using WebApplication1.Wrappers;
+using Microsoft.AspNetCore.Authorization;
 
 namespace WebApplication1.Controllers
 {
+    [Authorize]
     [Route("api/[controller]")]
     [ApiController]
     public class VendorsController : ControllerBase
@@ -24,9 +26,35 @@ namespace WebApplication1.Controllers
 
         // GET: api/Vendors
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<Vendor>>> GetVendor()
+        public async Task<ActionResult<IEnumerable<Vendor>>> GetVendor([FromQuery] Vendor vendor)
         {
-            var response = await _context.Vendor.ToListAsync();
+            IQueryable<Vendor> filterresponse;
+            filterresponse = _context.Vendor.AsQueryable();
+            if (vendor.VendorId != 0)
+            {
+                filterresponse = filterresponse.Where(x => x.VendorId == vendor.VendorId);
+            }
+            if (vendor.VendorName != null)
+            {
+                filterresponse = filterresponse.Where(x => x.VendorName == vendor.VendorName);
+            }
+            if (vendor.Phone != null)
+            {
+                filterresponse = filterresponse.Where(x => x.Phone == vendor.Phone);
+            }
+            if (vendor.Address != null)
+            {
+                filterresponse = filterresponse.Where(x => x.Address == vendor.Address);
+            }
+            if (vendor.Gstnumber != null)
+            {
+                filterresponse = filterresponse.Where(x => x.Gstnumber == vendor.Gstnumber);
+            }
+            if (vendor.Email != null)
+            {
+                filterresponse = filterresponse.Where(x => x.Email == vendor.Email);
+            }
+            var response = await filterresponse.ToListAsync();
             return Ok(new Response<List<Vendor>>(response));
         }
 
@@ -130,6 +158,11 @@ namespace WebApplication1.Controllers
         private bool VendorExists(int id)
         {
             return _context.Vendor.Any(e => e.VendorId == id);
+        }
+
+        private IQueryable<Order> filter(Order order, IQueryable<Order> filterresponse)
+        {
+            return filterresponse;
         }
     }
 }

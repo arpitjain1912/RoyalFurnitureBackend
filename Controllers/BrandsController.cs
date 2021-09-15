@@ -8,9 +8,11 @@ using Microsoft.EntityFrameworkCore;
 using WebApplication1.Models;
 using WebApplication1.Filters;
 using WebApplication1.Wrappers;
+using Microsoft.AspNetCore.Authorization;
 
 namespace WebApplication1.Controllers
 {
+    [Authorize]
     [Route("api/[controller]")]
     [ApiController]
     public class BrandsController : ControllerBase
@@ -24,9 +26,16 @@ namespace WebApplication1.Controllers
 
         // GET: api/Brands
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<Brand>>> GetBrand()
+        public async Task<ActionResult<IEnumerable<Brand>>> GetBrand([FromQuery] Brand brand)
         {
-            var response= await _context.Brand.ToListAsync();
+            IQueryable<Brand> filterresponse;
+            filterresponse = _context.Brand.AsQueryable();
+            /*SearchFilter<Brand> sf=new SearchFilter<Brand>(brand,filterresponse);
+            filterresponse=sf.filter();*/
+
+            filterresponse = filter(brand, filterresponse);
+            
+            var response= await filterresponse.ToListAsync();
             return Ok(new Response<List<Brand>> (response));
         }
 
@@ -128,6 +137,19 @@ namespace WebApplication1.Controllers
         private bool BrandExists(string id)
         {
             return _context.Brand.Any(e => e.BrandId == id);
+        }
+
+        private IQueryable<Brand> filter(Brand brand, IQueryable<Brand> filterresponse)
+        {
+            if (brand.BrandId != null)
+            {
+                filterresponse = filterresponse.Where(x => x.BrandId == brand.BrandId);
+            }
+            if (brand.BrandName != null)
+            {
+                filterresponse = filterresponse.Where(x => x.BrandName == brand.BrandName);
+            }
+            return filterresponse;
         }
     }
 }

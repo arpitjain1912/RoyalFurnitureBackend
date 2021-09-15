@@ -8,9 +8,11 @@ using Microsoft.EntityFrameworkCore;
 using WebApplication1.Models;
 using WebApplication1.Filters;
 using WebApplication1.Wrappers;
+using Microsoft.AspNetCore.Authorization;
 
 namespace WebApplication1.Controllers
 {
+    [Authorize]
     [Route("api/[controller]")]
     [ApiController]
     public class OrderItemsController : ControllerBase
@@ -24,9 +26,12 @@ namespace WebApplication1.Controllers
 
         // GET: api/OrderItems
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<OrderItem>>> GetOrderItem()
+        public async Task<ActionResult<IEnumerable<OrderItem>>> GetOrderItem([FromQuery] OrderItem orderitem)
         {
-            var response = await _context.OrderItem.Include("Store").Include("ItemNameNavigation").ToListAsync();
+            IQueryable<OrderItem> filterresponse;
+            filterresponse = _context.OrderItem.AsQueryable();
+            filterresponse = filter(orderitem, filterresponse);
+            var response = await filterresponse.Include("Store").Include("ItemNameNavigation").Include("CostPriceAssigned").ToListAsync();
             return Ok(new Response<List<OrderItem>>(response));
         }
 
@@ -54,6 +59,15 @@ namespace WebApplication1.Controllers
             {
                 return BadRequest();
             }
+            if (!OrderItemExists(id))
+            {
+                return NotFound();
+            }
+            var oldEntry = await _context.OrderItem.FindAsync(id);
+
+            var curr_stock = await _context.CurrentStock.FindAsync(orderItem.ItemName, orderItem.StoreId);
+            curr_stock.TotalQuantityLeft += oldEntry.Quantity;
+            curr_stock.TotalQuantityLeft -= orderItem.Quantity;
 
             _context.Entry(orderItem).State = EntityState.Modified;
 
@@ -82,6 +96,13 @@ namespace WebApplication1.Controllers
         [HttpPost]
         public async Task<ActionResult<OrderItem>> PostOrderItem(OrderItem orderItem)
         {
+            DateTime aDate = DateTime.Now;
+            orderItem.AddedAt = aDate;
+            orderItem.ModifiedAt = aDate;
+
+            var curr_stock = await _context.CurrentStock.FindAsync(orderItem.ItemName, orderItem.StoreId);
+            curr_stock.TotalQuantityLeft -= orderItem.Quantity;
+
             _context.OrderItem.Add(orderItem);
             try
             {
@@ -112,6 +133,9 @@ namespace WebApplication1.Controllers
                 return NotFound();
             }
 
+            var curr_stock = await _context.CurrentStock.FindAsync(orderItem.ItemName, orderItem.StoreId);
+            curr_stock.TotalQuantityLeft += orderItem.Quantity;
+
             _context.OrderItem.Remove(orderItem);
             await _context.SaveChangesAsync();
 
@@ -121,6 +145,35 @@ namespace WebApplication1.Controllers
         private bool OrderItemExists(string id)
         {
             return _context.OrderItem.Any(e => e.ItemName == id);
+        }
+
+        private IQueryable<OrderItem> filter(OrderItem orderitem, IQueryable<OrderItem> filterresponse)
+        {
+            if (orderitem.ItemName != null)
+            {
+                filterresponse = filterresponse.Where(x => x.ItemName == orderitem.ItemName);
+            }
+            if (orderitem.OrderId != 0)
+            {
+                filterresponse = filterresponse.Where(x => x.OrderId == orderitem.OrderId);
+            }
+            if (orderitem.StoreId != 0)
+            {
+                filterresponse = filterresponse.Where(x => x.StoreId == orderitem.StoreId);
+            }
+            if (orderitem.Quantity != 0)
+            {
+                filterresponse = filterresponse.Where(x => x.Quantity == orderitem.Quantity);
+            }
+            if (orderitem.CostPrice != 0)
+            {
+                filterresponse = filterresponse.Where(x => x.CostPrice == orderitem.CostPrice);
+            }
+            if (orderitem.SellingPrice != 0)
+            {
+                filterresponse = filterresponse.Where(x => x.SellingPrice == orderitem.SellingPrice);
+            }
+            return filterresponse;
         }
     }
 }
